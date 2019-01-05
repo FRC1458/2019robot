@@ -3,6 +3,11 @@ package frc.team1458.robot
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj.I2C
+
+import jaci.pathfinder.Trajectory
+import com.kauailabs.navx.frc.AHRS
+import com.ctre.phoenix.motorcontrol.can.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -11,6 +16,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
  * creating this project, you must also update the build.gradle file in the
  * project.
  */
+
+// var address = 0x00
+// val port = I2C(I2C.Port.kOnboard, address)
+
+val tal = TalonSRX(1);
+val traj = Trajectory(1)
+val jk = AHRS(I2C.Port.kOnboard)
+
+
 class Robot : TimedRobot() {
     private var m_autoSelected: String? = null
     private val m_chooser = SendableChooser<String>()
