@@ -17,13 +17,6 @@ import com.ctre.phoenix.motorcontrol.can.*;
  * project.
  */
 
-// var address = 0x00
-// val port = I2C(I2C.Port.kOnboard, address)
-
-val tal = TalonSRX(1);
-val traj = Trajectory(1)
-val jk = AHRS(I2C.Port.kOnboard)
-
 
 class Robot : TimedRobot() {
     private var m_autoSelected: String? = null
