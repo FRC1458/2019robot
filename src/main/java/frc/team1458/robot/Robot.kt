@@ -11,7 +11,7 @@ class Robot : TimedRobot() {
     private val m_chooser = SendableChooser<String>()
 
 
-    // Stolen from Anish's code
+    // Stolen from Anish's code hmm
     val opInt = OI()
     val robot = RobotMapFinalChassis(opInt)
 
