@@ -1,11 +1,11 @@
 package frc.team1458.lib.actuator
 
-interface Motor : Stoppable {
+interface Motor {
     var speed : Double
         set
         get
 
-    override fun stop() {
+    fun stop() {
         speed = 0.0
     }
 

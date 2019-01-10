@@ -3,7 +3,6 @@ package frc.team1458.lib.pathfinding
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import jaci.pathfinder.Pathfinder
 import jaci.pathfinder.Trajectory
-import frc.team1458.lib.core.BaseAutoMode
 import frc.team1458.lib.drive.TankDrive
 import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.util.flow.delay
@@ -21,7 +20,7 @@ class SplineFollower(val left: Trajectory,
                      val stopFunc: () -> Boolean = { false },
                      val reversed: Boolean = false,
                      val everyIterationFunc: () -> Unit = { }
-                    ) : BaseAutoMode() {
+                    ) {
 
     constructor(leftCSV: String, rightCSV: String, drivetrain: TankDrive,
                 dt: Double? = null, gyro: AngleSensor? = null, gyro_kP: Double? = null,
@@ -34,9 +33,9 @@ class SplineFollower(val left: Trajectory,
                     drivetrain, dt, gyro, gyro_kP, name, stopFunc, reversed, everyIterationFunc)
 
     val dt: Double = dt ?: (left[0].dt * 1000.0)
-    override val name = name
+    val name = name
 
-    override fun auto() {
+    fun auto() {
         val startTime = systemTimeMillis
         fun getIndex() = Math.floor((systemTimeMillis - startTime) / dt).toInt()
 

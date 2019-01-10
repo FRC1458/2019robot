@@ -7,7 +7,6 @@ import frc.team1458.lib.util.flow.go
 import frc.team1458.lib.util.flow.periodic
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.maths.MovingAverage
-import frc.team1458.lib.util.maths.kinematics.Rotation2D
 
 interface AngleSensor : Zeroable {
     val inverted : AngleSensor
@@ -30,12 +29,6 @@ interface AngleSensor : Zeroable {
      */
     val heading : Double
         get() = angle % 360.0
-
-    /**
-     * Heading as a Rotation2D object
-     */
-    val orientation : Rotation2D
-        get() = Rotation2D(angle)
 
     override fun zero()
 

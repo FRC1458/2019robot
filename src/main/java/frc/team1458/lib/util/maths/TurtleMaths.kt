@@ -4,6 +4,17 @@ package frc.team1458.lib.util.maths
  * Math utility classes
  */
 object TurtleMaths {
+
+    val TWOPI = 2.0 * 3.14159265
+
+    fun constrainAngle(angle: Double) : Double {
+        var a = angle
+        while(a >= TWOPI || a <= 0) {
+            a += TWOPI
+        }
+        return a
+    }
+
     fun constrain(value: Double, min: Double, max: Double) : Double {
         if(value > max) {
             return max

@@ -16,12 +16,7 @@ import java.util.*
  */
 
 // TODO Change SampleRobot to non-deprecated replacement
-abstract class BaseRobot : SampleRobot, AutoModeHolder {
-
-    override val autoModes = ArrayList<AutoMode>()
-        get
-
-    override var selectedAutoModeIndex = 0
+abstract class BaseRobot : SampleRobot {
 
     constructor() : super()
 
@@ -31,15 +26,9 @@ abstract class BaseRobot : SampleRobot, AutoModeHolder {
     abstract fun robotSetup()
 
     /**
-     * This method should be overridden and add autonomous modes (which extend AutoMode) using the method addAutoMode()
+     * Runs auton
      */
-    abstract fun setupAutoModes()
-
-    /**
-     * Initialize any robot configuration which is time-consuming and must be run on a separate thread.
-     * This is not guaranteed to finish before the robot is enabled
-     */
-    abstract fun threadedSetup()
+    abstract fun runAuto()
 
     /**
      * Setup for teleop (if necessary)
@@ -60,36 +49,23 @@ abstract class BaseRobot : SampleRobot, AutoModeHolder {
      * Called when the robot is disabled.
      */
     abstract fun robotDisabled()
-
     abstract fun disabledPeriodic()
 
-    open fun selectAutoMode() { }
-
-    fun addAutoMode(autoMode: AutoMode) {
-        autoModes.add(autoMode)
-    }
 
     override fun robotInit() {
         robotSetup()
-        setupAutoModes()
-        go { threadedSetup() }
-
-        if (autoModes.isEmpty()) {
-            autoModes.add(BlankAutoMode())
-        }
     }
 
     override fun disabled() {
         robotDisabled()
         while(isDisabled) {
             disabledPeriodic()
+            delay(3)
         }
     }
 
     override fun autonomous() {
-        selectAutoMode()
-        val autoMode = autoModes[selectedAutoModeIndex]
-        autoMode?.auto()
+        runAuto()
     }
 
     override fun operatorControl() {
