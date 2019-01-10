@@ -7,7 +7,7 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2019.1.1"
 }
 
-def ROBOT_CLASS = "frc.team1458.robot.RobotKt"
+def ROBOT_CLASS = "frc.team1458.robot.Main"
 def TEAM_NUMBER = 1458
 def DEBUG = false
 
@@ -48,6 +48,7 @@ dependencies {
 
     // Maybe add Junit?
     compile "org.jetbrains.kotlin:kotlin-stdlib"
+    compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.1.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0"
 }
 

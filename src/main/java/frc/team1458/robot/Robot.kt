@@ -3,24 +3,21 @@ package frc.team1458.robot
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj.I2C
-
-import jaci.pathfinder.Trajectory
-import com.kauailabs.navx.frc.AHRS
-import com.ctre.phoenix.motorcontrol.can.*;
-
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the TimedRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the build.gradle file in the
- * project.
- */
+import frc.team1458.lib.util.flow.delay
 
 
 class Robot : TimedRobot() {
     private var m_autoSelected: String? = null
     private val m_chooser = SendableChooser<String>()
+
+
+    // Stolen from Anish's code
+    val opInt = OI()
+    val robot = RobotMapFinalChassis(opInt)
+
+    var drivetrainInverted = false
+    var lastTriggered = false
+
 
     /**
      * This function is run when the robot is first started up and should be
@@ -30,6 +27,12 @@ class Robot : TimedRobot() {
         m_chooser.setName("Default Auto", kDefaultAuto)
         m_chooser.setName("My Auto", kCustomAuto)
         SmartDashboard.putData("Auto choices", m_chooser)
+
+        lastTriggered = false
+        // Hah we only have 1 gear so is it safe to remove? :thonk:
+        robot.drivetrain.lowGear()
+        robot.drivetrain.leftMaster.connectedEncoder.zero()
+        robot.drivetrain.rightMaster.connectedEncoder.zero()
     }
 
     /**
@@ -59,6 +62,11 @@ class Robot : TimedRobot() {
         m_autoSelected = m_chooser.selected
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         println("Auto selected: " + m_autoSelected!!)
+
+        // Test autonomous script
+        robot.drivetrain.tankDrive(0.1, 0.1)
+        delay(500)
+        robot.drivetrain.tankDrive(0.0, 0.0)
     }
 
     /**
@@ -72,18 +80,44 @@ class Robot : TimedRobot() {
             }
             else -> {
             }
-        }// Put custom auto code here
-        // Put default auto code here
+        }
     }
 
     /**
      * This function is called periodically during operator control.
      */
-    override fun teleopPeriodic() {}
+    override fun teleopPeriodic() {
+        // Stolen from Anish's code:
+        // Press button to invert drivetrain
+        if (opInt.invertButton.triggered && !lastTriggered) {
+            drivetrainInverted = !drivetrainInverted
 
-    /**
-     * This function is called periodically during test mode.
-     */
+            /* Switch camera if drivetrain inverted
+            if(drivetrainInverted) {
+                cameraServer.source = rearCamera
+            } else {
+                cameraServer.source = frontCamera
+            } */
+        }
+
+        lastTriggered = opInt.invertButton.triggered
+
+        robot.drivetrain.arcadeDrive(
+            if (drivetrainInverted) {
+                -0.5 * (opInt.throttleAxis.value)
+            } else if (opInt.slowDownButton.triggered) {
+                0.5 * opInt.throttleAxis.value
+            } else {
+                opInt.throttleAxis.value
+            },
+            if (drivetrainInverted) {
+                (opInt.steerAxis.value)
+            } else {
+                opInt.steerAxis.value
+            }
+        )
+    }
+
     override fun testPeriodic() {}
 
     companion object {
