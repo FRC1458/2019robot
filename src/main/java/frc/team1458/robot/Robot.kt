@@ -61,6 +61,8 @@ class Robot : BaseRobot() {
 
     override fun teleopInit() {
         // likely nothing here
+
+
     }
 
     override fun teleopPeriodic() {
@@ -85,6 +87,19 @@ class Robot : BaseRobot() {
         else { 0.0 }
         elev1.speed = speed
         elev2.speed = speed
+
+        if(oi.intakeIn.triggered){
+            SmartMotor.CANtalonSRX(17).inverted.speed = 1.0
+            SmartMotor.CANtalonSRX(19).speed = 1.0
+        }
+        else if(oi.intakeOut.triggered) {
+            SmartMotor.CANtalonSRX(17).inverted.speed = -1.0
+            SmartMotor.CANtalonSRX(19).speed = -1.0
+        }
+        else{
+            SmartMotor.CANtalonSRX(17).inverted.speed = 0.0
+            SmartMotor.CANtalonSRX(19).speed = 0.0
+        }
     }
 
     override fun runTest() {
