@@ -5,6 +5,7 @@ import frc.team1458.lib.actuator.Solenoid
 import frc.team1458.lib.util.flow.delay
 import frc.team1458.lib.core.BaseRobot
 import frc.team1458.lib.drive.TankDrive
+import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
 
 
@@ -37,6 +38,12 @@ class Robot : BaseRobot() {
     )
 
     val drivetrainInverted: Boolean = false
+
+    // Elevator stuff
+    val mag1 = Switch.fromDIO(8).inverted
+    val mag2 = Switch.fromDIO(9).inverted
+    val elev1 = SmartMotor.CANtalonSRX(20).inverted
+    val elev2 = SmartMotor.CANtalonSRX(21).inverted
 
     override fun robotSetup() {
         println("Setup")
@@ -72,6 +79,12 @@ class Robot : BaseRobot() {
                 oi.steerAxis.value
             }
         )
+
+        val speed = if(oi.elevatorUp.triggered && !mag1.triggered) { 0.8 }
+        else if(oi.elevatorDown.triggered && !mag2.triggered) { -0.8 }
+        else { 0.0 }
+        elev1.speed = speed
+        elev2.speed = speed
     }
 
     override fun runTest() {

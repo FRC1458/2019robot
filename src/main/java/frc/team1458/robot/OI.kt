@@ -10,4 +10,7 @@ class OI {
     var throttleAxis = rightStick.pitchAxis.inverted
 
     var slowDownButton = rightStick.trigger
+
+    val elevatorUp = leftStick.getButton(4)
+    val elevatorDown = leftStick.getButton(6)
 }
