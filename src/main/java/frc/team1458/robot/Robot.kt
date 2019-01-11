@@ -2,12 +2,16 @@ package frc.team1458.robot
 
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
+import frc.team1458.lib.sensor.*
+import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.util.flow.delay
 import frc.team1458.lib.core.BaseRobot
 import frc.team1458.lib.drive.TankDrive
 import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
 
+import edu.wpi.first.wpilibj.SmartDashboard
+import edu.wpi.first.networktables.*
 
 class Robot : BaseRobot() {
 
@@ -39,17 +43,24 @@ class Robot : BaseRobot() {
 
     val drivetrainInverted: Boolean = false
 
+    val gyro: AngleSensor = NavX.MXP_I2C().yaw
+
     // Elevator stuff
     val mag1 = Switch.fromDIO(8).inverted
     val mag2 = Switch.fromDIO(9).inverted
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
     val elev2 = SmartMotor.CANtalonSRX(21).inverted
 
+    val table = NetworkTableInstance.getDefault().getTable("Live_Dashboard")
+    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
+
     override fun robotSetup() {
         println("Setup")
 
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
+        gyro.zero()
+        odom.update()
     }
 
     override fun runAuto() {
@@ -66,6 +77,17 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopPeriodic() {
+
+        // some logging code - don't mess with this rn
+        odom.update()
+        SmartDashboard.putNumber("GyroAngle", gyro.heading)
+
+        // should work with falcondash
+        table.getEntry("robotX").setDouble(odom.pose.x)
+        table.getEntry("robotY").setDouble(odom.pose.y)
+        table.getEntry("robotHeading").setDouble(odom.pose.theta)
+
+
         // drive code - runs around 50hz
         dt.arcadeDrive(
             if (drivetrainInverted) {

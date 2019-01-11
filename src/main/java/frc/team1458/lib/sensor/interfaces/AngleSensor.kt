@@ -18,6 +18,10 @@ interface AngleSensor : Zeroable {
     val angle : Double
         get
 
+    // Superior unit
+    val radians : Double
+        get() = angle * 0.0174533
+
     /**
      * Angular velocity in degrees per second
      */
