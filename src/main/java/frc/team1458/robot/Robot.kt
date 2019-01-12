@@ -52,8 +52,8 @@ class Robot : BaseRobot() {
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
     val elev2 = SmartMotor.CANtalonSRX(21).inverted
 
-    val table = NetworkTableInstance.getDefault().getTable("Live_Dashboard")
-    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
+    // val table = NetworkTableInstance.getDefault().getTable("Live_Dashboard")
+    // val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
 
     override fun robotSetup() {
         println("Setup")
@@ -61,7 +61,7 @@ class Robot : BaseRobot() {
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
         gyro.zero()
-        odom.update()
+        // odom.update()
     }
 
     override fun runAuto() {
@@ -79,7 +79,7 @@ class Robot : BaseRobot() {
 
     override fun teleopPeriodic() {
 
-        // some logging code - don't mess with this rn
+        /* some logging code - don't mess with this rn
         odom.update()
         SmartDashboard.putNumber("GyroAngle", gyro.heading)
 
@@ -88,6 +88,7 @@ class Robot : BaseRobot() {
         table.getEntry("robotY").setDouble(odom.pose.y)
         table.getEntry("robotHeading").setDouble(odom.pose.theta)
 
+        */
 
         // drive code - runs around 50hz
         dt.arcadeDrive(
