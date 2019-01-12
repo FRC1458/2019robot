@@ -78,10 +78,20 @@ class Robot : BaseRobot() {
         // TURTWIG
         println("Warning: Sandstorm")
 
+        dt.leftMaster.connectedEncoder.zero()
+        dt.rightMaster.connectedEncoder.zero()
+        gyro.zero()
+
+        odom.reset()
+        odom.setup()
+        odom.update()
+
         // magic magic magic
 
         // Square path
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
+        // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
+
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0)), 120)
 
         val LOOKAHEAD = 0.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
@@ -89,7 +99,7 @@ class Robot : BaseRobot() {
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.5)
 
-        while(true) {
+        while(isAutonomous && isEnabled) {
             odom.update()
             LiveDashboard.putOdom(odom.pose)
 
@@ -107,9 +117,11 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopPeriodic() {
+        println("got not here")
         odom.update()
         LiveDashboard.putOdom(odom.pose)
         SmartDashboard.putNumber("GyroAngle", gyro.heading)
+        println("got here")
 
         // drive code - runs around 50hz
         dt.arcadeDrive(

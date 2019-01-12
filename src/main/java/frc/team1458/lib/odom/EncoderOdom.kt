@@ -2,8 +2,7 @@ package frc.team1458.lib.odom
 
 import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.util.maths.TurtleMaths
-import java.lang.Math.cos
-import java.lang.Math.sin
+import java.lang.Math.*
 
 class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro: AngleSensor) {
 
@@ -18,6 +17,13 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         println("turtwig is gud")
     }
 
+    fun reset() {
+        lastLeft = 0.0
+        lastRight = 0.0
+        pose = Pose2D(0.0, 0.0, 0.0)
+
+    }
+
     fun setup() {
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
@@ -26,6 +32,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
     fun update() {
         val dl = left.distanceFeet - lastLeft
         val dr = right.distanceFeet - lastRight
+
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
 
@@ -35,6 +42,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         val theta = TurtleMaths.constrainAngle((pose.theta + gyro.radians) / 2.0)
 
         // TODO - use proper differential arc approximation
-        pose = Pose2D(pose.x + fwd * cos(theta), pose.y + fwd * sin(theta), gyro.radians)
+        println(toDegrees(gyro.radians))
+        pose = Pose2D(pose.x - fwd * cos(theta), pose.y + fwd * sin(theta), gyro.radians)
     }
 }
