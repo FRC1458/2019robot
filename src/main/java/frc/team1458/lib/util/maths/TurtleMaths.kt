@@ -56,6 +56,10 @@ object TurtleMaths {
 
         return Math.sqrt(standardDeviation / numArray.size)
     }
+
+    fun distance(pt1: Pair<Double, Double>, pt2: Pair<Double, Double>): Double {
+        return Math.sqrt((pt1.first - pt2.first) * (pt1.first - pt2.first) + (pt1.second - pt2.second) * (pt1.second - pt2.second))
+    }
 }
 
 fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)

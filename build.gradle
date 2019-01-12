@@ -6,11 +6,17 @@ plugins {
     id 'idea'
     id 'org.jetbrains.kotlin.jvm' version '1.3.11'
     id "edu.wpi.first.GradleRIO" version "2019.1.1"
+    id 'application'
 }
 
 def ROBOT_CLASS = "frc.team1458.robot.Main"
 def TEAM_NUMBER = 1458
 def DEBUG = false
+
+
+application {
+    mainClassName = "frc.team1458.robot.Test"
+}
 
 deploy {
     targets {
