@@ -77,6 +77,8 @@ abstract class BaseRobot : SampleRobot {
             TelemetryLogger.endIteration()
             var lastEndMillis = systemTimeMillis
 
+            if(lastEndMillis - lastStartMillis > 20) print("REEEEEE EXCEEDED LImITS YOU BORKED IT")
+
             var nextStartMillis : Double = lastStartMillis
 
             while(nextStartMillis < lastEndMillis || (nextStartMillis.toLong() % 20) != 0L) {

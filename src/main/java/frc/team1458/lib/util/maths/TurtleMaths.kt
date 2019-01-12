@@ -9,7 +9,10 @@ object TurtleMaths {
 
     fun constrainAngle(angle: Double) : Double {
         var a = angle
-        while(a >= TWOPI || a <= 0) {
+        while(a >= TWOPI) {
+            a -= TWOPI
+        }
+        while(a <= 0) {
             a += TWOPI
         }
         return a

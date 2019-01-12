@@ -13,6 +13,8 @@ import frc.team1458.lib.odom.EncoderOdom
 
 import edu.wpi.first.networktables.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import frc.team1458.lib.util.flow.systemTimeMillis
+import frc.team1458.lib.util.flow.systemTimeSeconds
 
 class Robot : BaseRobot() {
 
@@ -52,16 +54,25 @@ class Robot : BaseRobot() {
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
     val elev2 = SmartMotor.CANtalonSRX(21).inverted
 
-    // val table = NetworkTableInstance.getDefault().getTable("Live_Dashboard")
-    // val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
+    val table = NetworkTableInstance.getDefault().getTable("Live_Dashboard")
+    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
+    var startTime: Double = 0.0
 
     override fun robotSetup() {
         println("Setup")
 
+
+
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
         gyro.zero()
-        // odom.update()
+
+
+        println(gyro)
+        println(dt.leftEnc)
+        println(dt.rightEnc)
+        odom.setup()
+        odom.update()
     }
 
     override fun runAuto() {
@@ -79,16 +90,22 @@ class Robot : BaseRobot() {
 
     override fun teleopPeriodic() {
 
-        /* some logging code - don't mess with this rn
+        // some logging code - don't mess with this rn
+        startTime = systemTimeMillis
+
         odom.update()
         SmartDashboard.putNumber("GyroAngle", gyro.heading)
 
+        println(systemTimeMillis - startTime)
+
         // should work with falcondash
+        startTime = systemTimeMillis
+
         table.getEntry("robotX").setDouble(odom.pose.x)
         table.getEntry("robotY").setDouble(odom.pose.y)
         table.getEntry("robotHeading").setDouble(odom.pose.theta)
 
-        */
+        println(systemTimeMillis - startTime)
 
         // drive code - runs around 50hz
         dt.arcadeDrive(
