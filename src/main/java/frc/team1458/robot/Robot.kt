@@ -9,9 +9,10 @@ import frc.team1458.lib.core.BaseRobot
 import frc.team1458.lib.drive.TankDrive
 import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
+import frc.team1458.lib.odom.EncoderOdom
 
-import edu.wpi.first.wpilibj.SmartDashboard
 import edu.wpi.first.networktables.*
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 
 class Robot : BaseRobot() {
 

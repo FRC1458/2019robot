@@ -3,8 +3,9 @@ package frc.team1458.lib.odom
 import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.odom.Pose2D
 import frc.team1458.lib.util.maths.TurtleMaths
+import kotlin.math.*
 
-class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro: AngleSensor? = null) {
+class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro: AngleSensor) {
 
     // TODO add interp and vision integration
 
