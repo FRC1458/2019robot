@@ -32,6 +32,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
     fun update() {
         val dl = left.distanceFeet - lastLeft
         val dr = right.distanceFeet - lastRight
+        val gyroRads = gyro.radians
 
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
@@ -39,10 +40,14 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         val fwd = (dl + dr).toDouble() / 2.0
 
         // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
-        val theta = TurtleMaths.constrainAngle((pose.theta + gyro.radians) / 2.0)
+        val theta = TurtleMaths.constrainAngle((pose.theta + gyroRads) / 2.0)
 
         // TODO - use proper differential arc approximation
-        println(toDegrees(gyro.radians))
-        pose = Pose2D(pose.x - fwd * cos(theta), pose.y + fwd * sin(theta), gyro.radians)
+        println("Gyro Angle: " + toDegrees(gyroRads))
+        println("fwd: $fwd")
+        println("theta: " + toDegrees(theta))
+
+
+        pose = Pose2D(pose.x + fwd * cos(theta), pose.y + fwd * sin(theta), gyroRads)
     }
 }

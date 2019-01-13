@@ -49,7 +49,7 @@ class Robot : BaseRobot() {
 
     val drivetrainInverted: Boolean = false
 
-    val gyro: AngleSensor = NavX.MXP_I2C().yaw
+    val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
 
     // Elevator stuff
     val mag1 = Switch.fromDIO(8).inverted
@@ -72,11 +72,13 @@ class Robot : BaseRobot() {
         odom.update()
 
         LiveDashboard.setup(13.0, 13.0)
+        LiveDashboard.endPath()
     }
 
     override fun runAuto() {
         // TURTWIG
         println("Warning: Sandstorm")
+        LiveDashboard.endPath()
 
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
@@ -91,17 +93,21 @@ class Robot : BaseRobot() {
         // Square path
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0)), 120)
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0)), 2)
 
         val LOOKAHEAD = 0.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
-        val VELOCITY = 1.0 // feet per second overall speed (this would be speed if going perfectly straight)
+        val VELOCITY = 1.5 // feet per second overall speed (this would be speed if going perfectly straight)
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.5)
 
-        while(isAutonomous && isEnabled) {
+        println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+
+        while(isAutonomous && isEnabled && !pp.finished(Pair(odom.pose.x, odom.pose.y))) {
             odom.update()
             LiveDashboard.putOdom(odom.pose)
+            println("X: " + odom.pose.x + " Y: " + odom.pose.y)
+            println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
             val (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
             dt.setDriveVelocity(l, r)
@@ -112,16 +118,18 @@ class Robot : BaseRobot() {
 
     override fun teleopInit() {
         // likely nothing here
+        println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
 
     }
 
     override fun teleopPeriodic() {
-        println("got not here")
         odom.update()
         LiveDashboard.putOdom(odom.pose)
         SmartDashboard.putNumber("GyroAngle", gyro.heading)
-        println("got here")
+
+        println("X: " + odom.pose.x + " Y: " + odom.pose.y)
+        println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
         // drive code - runs around 50hz
         dt.arcadeDrive(
@@ -163,6 +171,12 @@ class Robot : BaseRobot() {
         // rewind mechanism, run compressor, etc
     }
 
-    override fun robotDisabled() {}
-    override fun disabledPeriodic() {}
+    override fun robotDisabled(
+    ) {
+        println("End Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        LiveDashboard.putOdom(odom.pose)
+    }
+    override fun disabledPeriodic() {
+        LiveDashboard.putOdom(odom.pose)
+    }
 }

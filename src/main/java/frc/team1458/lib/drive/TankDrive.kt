@@ -111,7 +111,7 @@ class TankDrive(val leftMaster: SmartMotor,
 
     val leftEnc : DistanceSensor = object : DistanceSensor {
         override val distanceMeters: Double
-            get() = leftMaster.connectedEncoder.angle * (wheelCircumference ?: 0.0) * 0.3048 / 360.0
+            get() = (leftMaster.connectedEncoder.angle * (wheelCircumference ?: 0.0) * 0.3048 / 360.0) * 1.047454406
 
         override val velocity: Double
             get() = leftMaster.connectedEncoder.rate * (wheelCircumference ?: 0.0) * 0.3048 / 360.0
@@ -123,7 +123,7 @@ class TankDrive(val leftMaster: SmartMotor,
 
     val rightEnc : DistanceSensor = object : DistanceSensor {
         override val distanceMeters: Double
-            get() = rightMaster.connectedEncoder.angle * (wheelCircumference ?: 0.0) * 0.3048 / 360.0
+            get() = (rightMaster.connectedEncoder.angle * (wheelCircumference ?: 0.0) * 0.3048 / 360.0) * 1.031306384
 
         override val velocity: Double
             get() = rightMaster.connectedEncoder.rate * (wheelCircumference ?: 0.0) * 0.3048 / 360.0

@@ -7,6 +7,7 @@ import frc.team1458.lib.util.flow.go
 import frc.team1458.lib.util.flow.periodic
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.maths.MovingAverage
+import frc.team1458.lib.util.maths.TurtleMaths
 
 interface AngleSensor : Zeroable {
     val inverted : AngleSensor
@@ -20,7 +21,7 @@ interface AngleSensor : Zeroable {
 
     // Superior unit
     val radians : Double
-        get() = angle * 0.0174533
+        get() = TurtleMaths.constrainAngle(angle * 0.0174533)
 
     /**
      * Angular velocity in degrees per second
