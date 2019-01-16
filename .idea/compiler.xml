@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="2019robot.main" target="1.8" />
       <module name="2019robot.test" target="1.8" />
+      <module name="2019robotShared_main" target="11" />
+      <module name="2019robotShared_test" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

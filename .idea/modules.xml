@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/2019robotShared.iml" filepath="$PROJECT_DIR$/.idea/2019robotShared.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/2019robotShared_main.iml" filepath="$PROJECT_DIR$/.idea/modules/2019robotShared_main.iml" group="2019robotShared" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/2019robotShared_test.iml" filepath="$PROJECT_DIR$/.idea/modules/2019robotShared_test.iml" group="2019robotShared" />
+    </modules>
+  </component>
+</project>
