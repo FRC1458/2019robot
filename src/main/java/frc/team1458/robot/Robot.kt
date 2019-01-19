@@ -18,9 +18,13 @@ import frc.team1458.lib.pathfinding.PurePursuitFollower
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.flow.systemTimeSeconds
+import java.beans.DesignMode
 
 class Robot : BaseRobot() {
 
+    var isElevating :Boolean = false
+    var isDecending :Boolean = false
+    var angleDesired:Double = 2.0
     val oi: OI = OI()
     val dt: TankDrive = TankDrive(
         leftMaster = SmartMotor.CANtalonSRX(16),
@@ -57,8 +61,12 @@ class Robot : BaseRobot() {
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
     val elev2 = SmartMotor.CANtalonSRX(21).inverted
 
+    val elevatorEncoder: AngleSensor = SmartMotor.CANtalonSRX(canID=21).connectedEncoder
+
     val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
     var startTime: Double = 0.0
+    var elevatorStartTime: Double = 0.0
+
 
     override fun robotSetup() {
         println("Setup")
@@ -124,6 +132,7 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopPeriodic() {
+
         odom.update()
         LiveDashboard.putOdom(odom.pose)
         SmartDashboard.putNumber("GyroAngle", gyro.heading)
@@ -147,11 +156,89 @@ class Robot : BaseRobot() {
             }
         )
 
+        /*
         val speed = if(oi.elevatorUp.triggered && !mag1.triggered) { 0.8 }
         else if(oi.elevatorDown.triggered && !mag2.triggered) { -0.8 }
         else { 0.0 }
         elev1.speed = speed
         elev2.speed = speed
+
+        */
+
+        if (oi.elevatorUp.triggered && !oi.elevatorDown.triggered)
+        {
+            if (elevatorEncoder.angle - angleDesired < 20 && !mag1.triggered)
+            {
+                elev1.speed = 0.9
+                elev2.speed = 0.9
+            }
+            else
+            {
+                elev1.speed = 0.0
+                elev2.speed = 0.0
+            }
+
+        }
+        else if (oi.elevatorDown.triggered && !oi.elevatorUp.triggered)
+        {
+            if (elevatorEncoder.angle < -20 && !mag1.triggered)
+            {
+                elev1.speed = -0.9
+                elev2.speed = -0.9
+            }
+            else
+            {
+                elev1.speed = 0.0
+                elev2.speed = 0.0
+            }
+
+        }
+        else
+        {
+
+            elev1.speed = 0.0
+            elev2.speed = 0.0
+            elevatorEncoder.zero()
+
+        }
+
+
+
+
+
+
+        /*
+
+        if(isElevating){
+            isElevating = elev1.connectedEncoder.angle < angleDesired && !mag1.triggered
+        }else{
+            isElevating = oi.elevatorUp.triggered
+        }
+
+        if(isDecending){
+            isDecending = elev1.connectedEncoder.angle > angleDesired * -1 && mag2.triggered
+        }else{
+            isDecending = oi.elevatorDown.triggered
+        }
+
+
+        if(isElevating && !isDecending){
+            elev1.speed = 0.9
+            elev2.speed = 0.9
+        }else if (isDecending && !isElevating){
+            elev1.speed = -0.9
+            elev2.speed = -0.9
+        }else if (!isDecending && !isElevating){
+            elev1.speed = 0.0
+            elev2.speed = 0.0
+            elev1.connectedEncoder.zero()
+        }else{
+            elev1.speed = 0.0
+            elev2.speed = 0.0
+        }
+
+*/
+
 
         if(oi.intakeIn.triggered){
             SmartMotor.CANtalonSRX(17).inverted.speed = 1.0
