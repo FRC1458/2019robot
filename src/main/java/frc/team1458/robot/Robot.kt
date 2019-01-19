@@ -15,16 +15,13 @@ import edu.wpi.first.networktables.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.pathfinding.PathUtils
 import frc.team1458.lib.pathfinding.PurePursuitFollower
+import frc.team1458.lib.util.Coprocessor
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.flow.systemTimeSeconds
-import java.beans.DesignMode
 
 class Robot : BaseRobot() {
 
-    var isElevating :Boolean = false
-    var isDecending :Boolean = false
-    var angleDesired:Double = 2.0
     val oi: OI = OI()
     val dt: TankDrive = TankDrive(
         leftMaster = SmartMotor.CANtalonSRX(16),
@@ -35,14 +32,15 @@ class Robot : BaseRobot() {
         wheelDiameter = 0.5,
         closedLoopScaling = 6.0, // TODO: determine
 
-        pidConstantsLowGearLeft =  PIDConstants(0.5, kI = 0.001, kD = 0.05, kF = 1.0/1798.8), // These are decent
-        pidConstantsLowGearRight = PIDConstants(0.5, kI = 0.001, kD = 0.05, kF = 1.0/1806.4), // These are decent2
+        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors
+        pidConstantsLowGearLeft = PIDConstants(0.5, kI = 0.0, kD = 0.05, kF = 1.0 / 1798.8), // These are decent
+        pidConstantsLowGearRight = PIDConstants(0.5, kI = 0.0, kD = 0.05, kF = 1.0 / 1806.4), // These are decent2
 
         shifter = Solenoid.doubleSolenoid(extendChannel = 1, retractChannel = 0)
                 + Solenoid.doubleSolenoid(extendChannel = 2, retractChannel = 3),
 
-        pidConstantsHighGearLeft = PIDConstants(0.15, kI = 0.001, kD = 0.01, kF = 1.0/6530.5), // TODO: determine
-        pidConstantsHighGearRight = PIDConstants(0.15, kI = 0.001, kD = 0.01, kF = 1.0/6877.7), // TODO: determine
+        pidConstantsHighGearLeft = PIDConstants(0.15, kI = 0.0, kD = 0.01, kF = 1.0 / 6530.5), // TODO: determine
+        pidConstantsHighGearRight = PIDConstants(0.15, kI = 0.0, kD = 0.01, kF = 1.0 / 6877.7), // TODO: determine
         autoShift = false,
         shiftUpSpeed = 10.0, // TODO: determine
         shiftDownSpeed = 12.0, // TODO: determine
@@ -53,20 +51,22 @@ class Robot : BaseRobot() {
 
     val drivetrainInverted: Boolean = false
 
-    val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
+    // Intake stuff
+    val intakeEnabled: Boolean = false
 
     // Elevator stuff
+    val elevatorEnabled: Boolean = true
     val mag1 = Switch.fromDIO(8).inverted
     val mag2 = Switch.fromDIO(9).inverted
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
     val elev2 = SmartMotor.CANtalonSRX(21).inverted
+    var elevatorSpeed =  0.0
 
-    val elevatorEncoder: AngleSensor = SmartMotor.CANtalonSRX(canID=21).connectedEncoder
-
+    // Autonomous stuff
+    val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
     val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
     var startTime: Double = 0.0
-    var elevatorStartTime: Double = 0.0
-
+    // val coprocessor: Coprocessor = frc.team1458.lib.util.Coprocessor("http://10.0.1.70/telemetry")
 
     override fun robotSetup() {
         println("Setup")
@@ -81,43 +81,61 @@ class Robot : BaseRobot() {
 
         LiveDashboard.setup(13.0, 13.0)
         LiveDashboard.endPath()
+        // coprocessor.sendRequest()
+
     }
 
     override fun runAuto() {
-        // TURTWIG
         println("Warning: Sandstorm")
+
+        // Clear the visualizer before we start auto
         LiveDashboard.endPath()
 
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
         gyro.zero()
 
-        odom.reset()
+        odom.clear()
         odom.setup()
         odom.update()
-
-        // magic magic magic
 
         // Square path
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0)), 2)
+        // TODO change number of points: has significant effect on any sort of driving
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(10.0, 5.0)), 200)
 
-        val LOOKAHEAD = 0.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
+        // TODO Play with lookahead as it greatly affects stability of PP algorithm
+        val LOOKAHEAD = 0.75 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
         val VELOCITY = 1.5 // feet per second overall speed (this would be speed if going perfectly straight)
+        val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.5)
 
-        println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        println("\nEncoder Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
-        while(isAutonomous && isEnabled && !pp.finished(Pair(odom.pose.x, odom.pose.y))) {
+        while (isAutonomous && isEnabled && !pp.finished(Pair(odom.pose.x, odom.pose.y))) {
             odom.update()
             LiveDashboard.putOdom(odom.pose)
-            println("X: " + odom.pose.x + " Y: " + odom.pose.y)
-            println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
-            val (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
+            var (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
+
+            // Precautionary velocity limit enforcement
+            if (l > MAXVEL) {
+                l = MAXVEL
+                println("Warning: Velocity Limits Enforced!")
+            } else if (l < (MAXVEL * -1.0)) {
+                l = (MAXVEL * -1.0)
+                println("Warning: Velocity Limits Enforced!")
+            }
+            if (r > MAXVEL) {
+                r = MAXVEL
+                println("Warning: Velocity Limits Enforced!")
+            } else if (r < (MAXVEL * -1.0)) {
+                r = (MAXVEL * -1.0)
+                println("Warning: Velocity Limits Enforced!")
+            }
             dt.setDriveVelocity(l, r)
 
             delay(5)
@@ -127,18 +145,14 @@ class Robot : BaseRobot() {
     override fun teleopInit() {
         // likely nothing here
         println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
-
-
     }
 
     override fun teleopPeriodic() {
-
         odom.update()
         LiveDashboard.putOdom(odom.pose)
-        SmartDashboard.putNumber("GyroAngle", gyro.heading)
+        // SmartDashboard.putNumber("GyroAngle", gyro.heading)
 
-        println("X: " + odom.pose.x + " Y: " + odom.pose.y)
-        println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        // println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
         // drive code - runs around 50hz
         dt.arcadeDrive(
@@ -156,101 +170,34 @@ class Robot : BaseRobot() {
             }
         )
 
-        /*
-        val speed = if(oi.elevatorUp.triggered && !mag1.triggered) { 0.8 }
-        else if(oi.elevatorDown.triggered && !mag2.triggered) { -0.8 }
-        else { 0.0 }
-        elev1.speed = speed
-        elev2.speed = speed
-
-        */
-
-        if (oi.elevatorUp.triggered && !oi.elevatorDown.triggered)
-        {
-            if (elevatorEncoder.angle - angleDesired < 20 && !mag1.triggered)
-            {
-                elev1.speed = 0.9
-                elev2.speed = 0.9
+        // Elevator control code
+        if (elevatorEnabled) {
+            if (oi.elevatorUp.triggered && !mag1.triggered) {
+                elevatorSpeed = 0.8
             }
-            else
-            {
-                elev1.speed = 0.0
-                elev2.speed = 0.0
+            else if (oi.elevatorDown.triggered && !mag2.triggered) {
+                elevatorSpeed = -0.8
+            }
+            else {
+                elevatorSpeed =  0.0
             }
 
+            elev1.speed = elevatorSpeed
+            elev2.speed = elevatorSpeed
         }
-        else if (oi.elevatorDown.triggered && !oi.elevatorUp.triggered)
-        {
-            if (elevatorEncoder.angle < -20 && !mag1.triggered)
-            {
-                elev1.speed = -0.9
-                elev2.speed = -0.9
+
+        // Intake control code
+        if (intakeEnabled) {
+            if (oi.intakeIn.triggered) {
+                SmartMotor.CANtalonSRX(17).inverted.speed = 1.0
+                SmartMotor.CANtalonSRX(19).speed = 1.0
+            } else if (oi.intakeOut.triggered) {
+                SmartMotor.CANtalonSRX(17).inverted.speed = -1.0
+                SmartMotor.CANtalonSRX(19).speed = -1.0
+            } else {
+                SmartMotor.CANtalonSRX(17).inverted.speed = 0.0
+                SmartMotor.CANtalonSRX(19).speed = 0.0
             }
-            else
-            {
-                elev1.speed = 0.0
-                elev2.speed = 0.0
-            }
-
-        }
-        else
-        {
-
-            elev1.speed = 0.0
-            elev2.speed = 0.0
-            elevatorEncoder.zero()
-
-        }
-
-
-
-
-
-
-        /*
-
-        if(isElevating){
-            isElevating = elev1.connectedEncoder.angle < angleDesired && !mag1.triggered
-        }else{
-            isElevating = oi.elevatorUp.triggered
-        }
-
-        if(isDecending){
-            isDecending = elev1.connectedEncoder.angle > angleDesired * -1 && mag2.triggered
-        }else{
-            isDecending = oi.elevatorDown.triggered
-        }
-
-
-        if(isElevating && !isDecending){
-            elev1.speed = 0.9
-            elev2.speed = 0.9
-        }else if (isDecending && !isElevating){
-            elev1.speed = -0.9
-            elev2.speed = -0.9
-        }else if (!isDecending && !isElevating){
-            elev1.speed = 0.0
-            elev2.speed = 0.0
-            elev1.connectedEncoder.zero()
-        }else{
-            elev1.speed = 0.0
-            elev2.speed = 0.0
-        }
-
-*/
-
-
-        if(oi.intakeIn.triggered){
-            SmartMotor.CANtalonSRX(17).inverted.speed = 1.0
-            SmartMotor.CANtalonSRX(19).speed = 1.0
-        }
-        else if(oi.intakeOut.triggered) {
-            SmartMotor.CANtalonSRX(17).inverted.speed = -1.0
-            SmartMotor.CANtalonSRX(19).speed = -1.0
-        }
-        else{
-            SmartMotor.CANtalonSRX(17).inverted.speed = 0.0
-            SmartMotor.CANtalonSRX(19).speed = 0.0
         }
     }
 
@@ -260,10 +207,13 @@ class Robot : BaseRobot() {
 
     override fun robotDisabled(
     ) {
-        println("End Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        println("\nEncoder End Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
         LiveDashboard.putOdom(odom.pose)
+        // coprocessor.sendRequest()
     }
+
     override fun disabledPeriodic() {
         LiveDashboard.putOdom(odom.pose)
+        // coprocessor.sendRequest()
     }
 }

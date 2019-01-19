@@ -2,7 +2,7 @@ package frc.team1458.lib.odom
 
 import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.util.maths.TurtleMaths
-import java.lang.Math.*
+import java.lang.Math.* // TODO switch to kotlin math libs sometime
 
 class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro: AngleSensor) {
 
@@ -14,10 +14,10 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
     var lastRight = 0.0
 
     init {
-        println("turtwig is gud")
+        println("Odometry Object Created")
     }
 
-    fun reset() {
+    fun clear() {
         lastLeft = 0.0
         lastRight = 0.0
         pose = Pose2D(0.0, 0.0, 0.0)
@@ -37,16 +37,15 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
 
-        val fwd = (dl + dr).toDouble() / 2.0
-
-        // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
-        val theta = TurtleMaths.constrainAngle((pose.theta + gyroRads) / 2.0)
+        val fwd = (dl + dr) / 2.0 // TODO Make sure double call was not necessary: (dl + dr).toDouble
 
         // TODO - use proper differential arc approximation
+        // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
+        val theta = TurtleMaths.constrainAngle((/*pose.theta +*/ gyroRads) / /*2.0*/ 1.0)
+
         println("Gyro Angle: " + toDegrees(gyroRads))
         println("fwd: $fwd")
         println("theta: " + toDegrees(theta))
-
 
         pose = Pose2D(pose.x + fwd * cos(theta), pose.y + fwd * sin(theta), gyroRads)
     }
