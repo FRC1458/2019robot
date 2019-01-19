@@ -55,7 +55,7 @@ class Robot : BaseRobot() {
     val intakeEnabled: Boolean = false
 
     // Elevator stuff
-    val elevatorEnabled: Boolean = false
+    val elevatorEnabled: Boolean = true
     val mag1 = Switch.fromDIO(8).inverted
     val mag2 = Switch.fromDIO(9).inverted
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
@@ -103,10 +103,10 @@ class Robot : BaseRobot() {
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
         // TODO change number of points: has significant effect on any sort of driving
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, -1.5), Pair(15.0, -2.5), Pair(20.0, -3.0)), 200)
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(10.0, 5.0)), 200)
 
         // TODO Play with lookahead as it greatly affects stability of PP algorithm
-        val LOOKAHEAD = 0.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
+        val LOOKAHEAD = 0.75 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
         val VELOCITY = 1.5 // feet per second overall speed (this would be speed if going perfectly straight)
         val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
