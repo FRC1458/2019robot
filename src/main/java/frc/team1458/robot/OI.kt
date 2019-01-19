@@ -9,12 +9,5 @@ class OI {
     var steerAxis = leftStick.rollAxis.scale(0.5) //controlBoard.xbox.rightX.scale(0.35) //
     var throttleAxis = rightStick.pitchAxis.inverted
 
-    var slowDownButton = rightStick.trigger
-
-    val elevatorUp = leftStick.getButton(4)
-    val elevatorDown = leftStick.getButton(6)
-
-
-    val intakeIn = leftStick.getButton(5)
-    val intakeOut = leftStick.getButton(2)
+    var exampleButton = rightStick.trigger
 }
