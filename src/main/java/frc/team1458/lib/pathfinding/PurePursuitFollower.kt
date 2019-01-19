@@ -2,7 +2,7 @@ package frc.team1458.lib.pathfinding
 
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.maths.TurtleMaths
-import java.lang.Math.*
+import kotlin.math.* // TODO check if  messed with: changed from java math to kotlin math
 
 
 class PurePursuitFollower(
@@ -19,9 +19,11 @@ class PurePursuitFollower(
         for (i in lastLookahead until points.size) {
             if (TurtleMaths.distance(robotPos, points[i]) > lookahead) {
                 lastLookahead = i
+                println("Next Look Ahead Point: " + points[i])
                 return points[i]
             }
         }
+
         lastLookahead = points.size - 1
         return points.last()
     }
@@ -39,14 +41,17 @@ class PurePursuitFollower(
         return Pair(deltax * cos(angleRad) - deltay * sin(angleRad), deltax * sin(angleRad) + deltay * cos(angleRad))
     }
 
-    private fun arcToTank(curve: Double, vel: Double): Pair<Double, Double> {
-        if (abs(curve) < 0.01) {
+    private fun arcToTank(invcurve: Double, vel: Double): Pair<Double, Double> {
+        if (abs(invcurve) < 0.01) {
             return Pair(scaling * vel, scaling * vel)
         } else {
-            // may need to swap signs here idk
-            val left = scaling * vel * curve * ((1.0 / curve) - (wheelbase / 2.0))
-            val right = scaling * vel * curve * ((1.0 / curve) + (wheelbase / 2.0))
-            //TODO: maybe flip values
+            val left = scaling * vel * (1.0 - invcurve * wheelbase / 2.0)
+            //val left = scaling * vel * invcurve * ((1.0 / invcurve) - (wheelbase / 2.0))
+            val right = scaling * vel * (1.0 + invcurve * wheelbase / 2.0)
+            //val right = scaling * vel * invcurve * ((1.0 / invcurve) + (wheelbase / 2.0))
+
+            println("left: $left = $scaling * $vel * (1.0 - $invcurve * 0.98)")
+            println("right: $right = $scaling * $vel * (1.0 + $invcurve * 0.98)")
 
             return Pair(left, right)
         }
@@ -56,18 +61,20 @@ class PurePursuitFollower(
 
     fun getControl(pos: Pair<Double, Double>, angle: Double, speed: Double): Pair<Double, Double> {
         if (finished(pos)) {
-            return Pair(0.0, 0.0)
+            return Pair(0.0, 0.0) // Stops robot if within the target tolerance
         }
 
-        val lookahead = getLookahead(pos)
-        LiveDashboard.putPath(lookahead.first, lookahead.second, 0.0)
+        val lookaheadpt = getLookahead(pos)
+        LiveDashboard.putPath(lookaheadpt.first, lookaheadpt.second, 0.0)
 
-        val pt = poseToPoint(pos, angle, lookahead)
+        val pt = poseToPoint(pos, angle, lookaheadpt)
         println("Robot Frame Point: (" + pt.first + ", " + pt.second + ")")
-        val curvature = -2.0 * pt.first / (pt.first * pt.first + pt.second * pt.second) //TODO: maybe remofe negative sign
-        println("Curvature: " + curvature)
+        val invcurve: Double =
+            2.0 * pt.second / (lookahead * lookahead/*pt.first * pt.first + pt.second * pt.second*/)
+        println("InvCurvature: $invcurve")
+        println("Curvature: ${1.0 / invcurve}")
 
-        return arcToTank(curvature, speed)
+        return arcToTank(invcurve, speed)
 
     }
 }

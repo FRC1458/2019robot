@@ -14,10 +14,10 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
     var lastRight = 0.0
 
     init {
-        println("turtwig is gud")
+        println("Odometry Created")
     }
 
-    fun reset() {
+    fun clear() {
         lastLeft = 0.0
         lastRight = 0.0
         pose = Pose2D(0.0, 0.0, 0.0)
@@ -39,14 +39,13 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
 
         val fwd = (dl + dr).toDouble() / 2.0
 
-        // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
-        val theta = TurtleMaths.constrainAngle((pose.theta + gyroRads) / 2.0)
-
         // TODO - use proper differential arc approximation
+        // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
+        val theta = TurtleMaths.constrainAngle((/*pose.theta +*/ gyroRads) / /*2.0*/ 1.0)
+
         println("Gyro Angle: " + toDegrees(gyroRads))
         println("fwd: $fwd")
         println("theta: " + toDegrees(theta))
-
 
         pose = Pose2D(pose.x + fwd * cos(theta), pose.y + fwd * sin(theta), gyroRads)
     }
