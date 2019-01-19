@@ -2,7 +2,7 @@ package frc.team1458.lib.odom
 
 import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.util.maths.TurtleMaths
-import java.lang.Math.*
+import java.lang.Math.* // TODO switch to kotlin math libs sometime
 
 class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro: AngleSensor) {
 
@@ -14,7 +14,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
     var lastRight = 0.0
 
     init {
-        println("Odometry Created")
+        println("Odometry Object Created")
     }
 
     fun clear() {
@@ -37,7 +37,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
 
-        val fwd = (dl + dr).toDouble() / 2.0
+        val fwd = (dl + dr) / 2.0 // TODO Make sure double call was not redundant: (dl + dr).toDouble
 
         // TODO - use proper differential arc approximation
         // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7

@@ -9,7 +9,7 @@ class PurePursuitFollower(
     val points: Array<Pair<Double, Double>>,
     val lookahead: Double,
     val scaling: Double,
-    val wheelbase: Double,
+    val wheelbase: Double, // Chassis width
     val targetTolerance: Double = 0.3
 ) {
 
@@ -28,6 +28,30 @@ class PurePursuitFollower(
         return points.last()
     }
 
+    // Get the closest point to the robot on the path, does not affect lastLookahead variable
+    private fun getClosestPathPoint(robotPos: Pair<Double, Double>): Pair<Double, Double> {
+        var closestIndex = 0
+        var closestDist = 0.0
+        var dist: Double
+
+        // TODO Maybe make more efficient, possibly based on position in path
+        for (i in 0 until points.size) { // TODO Maybe out of bounds error, maybe inclusive
+            dist = TurtleMaths.distance(robotPos, points[i])
+
+            if (i == 0) {
+                closestIndex = i
+                closestDist = dist
+            } else if (dist < closestDist) {
+                closestIndex = i
+                closestDist = dist
+            }
+
+        }
+
+        return points[closestIndex]
+    }
+
+    // Applies translation as well as rotation matrix to convert the points to robot coordinate space
     private fun poseToPoint(
         pos: Pair<Double, Double>,
         angle: Double,
@@ -37,7 +61,7 @@ class PurePursuitFollower(
         val deltay = newPoint.second - pos.second
 
         val angleRad = -1 * angle // + (3.1415926 / 2.0)
-        //converts to robot local coordinate frame
+
         return Pair(deltax * cos(angleRad) - deltay * sin(angleRad), deltax * sin(angleRad) + deltay * cos(angleRad))
     }
 
@@ -57,8 +81,10 @@ class PurePursuitFollower(
         }
     }
 
+    // Checks if the path following has finished using the target tolerance distance to the robot
     fun finished(pos: Pair<Double, Double>): Boolean = (TurtleMaths.distance(pos, points.last()) < targetTolerance)
 
+    // Takes the position and returns the velocity values for the drivetrain
     fun getControl(pos: Pair<Double, Double>, angle: Double, speed: Double): Pair<Double, Double> {
         if (finished(pos)) {
             return Pair(0.0, 0.0) // Stops robot if within the target tolerance
@@ -70,7 +96,7 @@ class PurePursuitFollower(
         val pt = poseToPoint(pos, angle, lookaheadpt)
         println("Robot Frame Point: (" + pt.first + ", " + pt.second + ")")
         val invcurve: Double =
-            2.0 * pt.second / (lookahead * lookahead/*pt.first * pt.first + pt.second * pt.second*/)
+            (2.0 * pt.second) / (lookahead * lookahead/*pt.first * pt.first + pt.second * pt.second*/)
         println("InvCurvature: $invcurve")
         println("Curvature: ${1.0 / invcurve}")
 

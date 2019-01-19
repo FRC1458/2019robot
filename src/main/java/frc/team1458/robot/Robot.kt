@@ -32,6 +32,7 @@ class Robot : BaseRobot() {
         wheelDiameter = 0.5,
         closedLoopScaling = 6.0, // TODO: determine
 
+        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors
         pidConstantsLowGearLeft = PIDConstants(0.5, kI = 0.0, kD = 0.05, kF = 1.0 / 1798.8), // These are decent
         pidConstantsLowGearRight = PIDConstants(0.5, kI = 0.0, kD = 0.05, kF = 1.0 / 1806.4), // These are decent2
 
@@ -102,12 +103,13 @@ class Robot : BaseRobot() {
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
         // TODO change number of points: has significant effect on any sort of driving
-        // Straight path
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(15.0, -5.0)), 200)
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, -1.5), Pair(15.0, -2.5), Pair(20.0, -3.0)), 200)
 
+        // TODO Play with lookahead as it greatly affects stability of PP algorithm
         val LOOKAHEAD = 0.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
         val VELOCITY = 1.5 // feet per second overall speed (this would be speed if going perfectly straight)
+        val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.5)
 
@@ -117,7 +119,23 @@ class Robot : BaseRobot() {
             odom.update()
             LiveDashboard.putOdom(odom.pose)
 
-            val (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
+            var (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
+
+            // Precautionary velocity limit enforcement
+            if (l > MAXVEL) {
+                l = MAXVEL
+                println("Warning: Velocity Limits Enforced!")
+            } else if (l < (MAXVEL * -1.0)) {
+                l = (MAXVEL * -1.0)
+                println("Warning: Velocity Limits Enforced!")
+            }
+            if (r > MAXVEL) {
+                r = MAXVEL
+                println("Warning: Velocity Limits Enforced!")
+            } else if (r < (MAXVEL * -1.0)) {
+                r = (MAXVEL * -1.0)
+                println("Warning: Velocity Limits Enforced!")
+            }
             dt.setDriveVelocity(l, r)
 
             delay(5)
@@ -127,16 +145,13 @@ class Robot : BaseRobot() {
     override fun teleopInit() {
         // likely nothing here
         println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
-
-
     }
 
     override fun teleopPeriodic() {
         odom.update()
         LiveDashboard.putOdom(odom.pose)
-        SmartDashboard.putNumber("GyroAngle", gyro.heading)
+        // SmartDashboard.putNumber("GyroAngle", gyro.heading)
 
-        // println("X: " + odom.pose.x + " Y: " + odom.pose.y)
         // println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
 
         // drive code - runs around 50hz
