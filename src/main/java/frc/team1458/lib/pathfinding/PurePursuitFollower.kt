@@ -90,7 +90,8 @@ class PurePursuitFollower(
             return Pair(0.0, 0.0) // Stops robot if within the target tolerance
         }
 
-        val lookaheadpt = getLookahead(pos)
+        // val lookaheadpt = getLookahead(pos) TODO Compare new lookahead function
+        val lookaheadpt = getClosestPathPoint(pos)
         LiveDashboard.putPath(lookaheadpt.first, lookaheadpt.second, 0.0)
 
         val pt = poseToPoint(pos, angle, lookaheadpt)

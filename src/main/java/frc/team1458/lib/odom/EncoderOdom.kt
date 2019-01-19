@@ -37,7 +37,7 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         lastLeft = left.distanceFeet
         lastRight = right.distanceFeet
 
-        val fwd = (dl + dr) / 2.0 // TODO Make sure double call was not redundant: (dl + dr).toDouble
+        val fwd = (dl + dr) / 2.0 // TODO Make sure double call was not necessary: (dl + dr).toDouble
 
         // TODO - use proper differential arc approximation
         // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
