@@ -15,7 +15,6 @@ import edu.wpi.first.networktables.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.pathfinding.PathUtils
 import frc.team1458.lib.pathfinding.PurePursuitFollower
-import frc.team1458.lib.util.Coprocessor
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.flow.systemTimeSeconds
@@ -53,6 +52,8 @@ class Robot : BaseRobot() {
 
     // Intake stuff
     val intakeEnabled: Boolean = false
+    val intake1 = SmartMotor.CANtalonSRX(17).inverted
+    val intake2 = SmartMotor.CANtalonSRX(19)
 
     // Elevator stuff
     val elevatorEnabled: Boolean = true
@@ -102,13 +103,13 @@ class Robot : BaseRobot() {
         // Square path
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
-        // TODO change number of points: has significant effect on any sort of driving
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(10.0, 5.0)), 200)
+        // TODO change number of points: has significant effect on any sort of driving , Pair(20.0, 10.0), Pair(20.0, -10.0)
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(8.646, 1.0), Pair(9.464, 2.0), Pair(9.873, 3.0), Pair(10.0, 4.0),Pair(10.0, 15.0)), 400)
 
         // TODO Play with lookahead as it greatly affects stability of PP algorithm
-        val LOOKAHEAD = 0.75 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
+        val LOOKAHEAD = 1.50 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
-        val VELOCITY = 1.5 // feet per second overall speed (this would be speed if going perfectly straight)
+        val VELOCITY = 3.0 // feet per second overall speed (this would be speed if going perfectly straight)
         val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.5)
@@ -123,17 +124,17 @@ class Robot : BaseRobot() {
 
             // Precautionary velocity limit enforcement
             if (l > MAXVEL) {
-                l = MAXVEL
+                //l = MAXVEL
                 println("Warning: Velocity Limits Enforced!")
             } else if (l < (MAXVEL * -1.0)) {
-                l = (MAXVEL * -1.0)
+                //l = (MAXVEL * -1.0)
                 println("Warning: Velocity Limits Enforced!")
             }
             if (r > MAXVEL) {
-                r = MAXVEL
+                //r = MAXVEL
                 println("Warning: Velocity Limits Enforced!")
             } else if (r < (MAXVEL * -1.0)) {
-                r = (MAXVEL * -1.0)
+                //r = (MAXVEL * -1.0)
                 println("Warning: Velocity Limits Enforced!")
             }
             dt.setDriveVelocity(l, r)
@@ -189,14 +190,14 @@ class Robot : BaseRobot() {
         // Intake control code
         if (intakeEnabled) {
             if (oi.intakeIn.triggered) {
-                SmartMotor.CANtalonSRX(17).inverted.speed = 1.0
-                SmartMotor.CANtalonSRX(19).speed = 1.0
+                intake1.speed = 1.0
+                intake2.speed = 1.0
             } else if (oi.intakeOut.triggered) {
-                SmartMotor.CANtalonSRX(17).inverted.speed = -1.0
-                SmartMotor.CANtalonSRX(19).speed = -1.0
+                intake1.speed = -1.0
+                intake2.speed = -1.0
             } else {
-                SmartMotor.CANtalonSRX(17).inverted.speed = 0.0
-                SmartMotor.CANtalonSRX(19).speed = 0.0
+                intake1.speed = 0.0
+                intake2.speed = 0.0
             }
         }
     }

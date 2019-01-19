@@ -10,7 +10,8 @@ class PurePursuitFollower(
     val lookahead: Double,
     val scaling: Double,
     val wheelbase: Double, // Chassis width
-    val targetTolerance: Double = 0.3
+    val targetTolerance: Double = 0.3,
+    val CURVATURECONSTANT: Double = 0.9
 ) {
 
     var lastLookahead = 0
@@ -66,7 +67,7 @@ class PurePursuitFollower(
     }
 
     private fun arcToTank(invcurve: Double, vel: Double): Pair<Double, Double> {
-        if (abs(invcurve) < 0.01) {
+        if (abs(invcurve) < 0.005) {
             return Pair(scaling * vel, scaling * vel)
         } else {
             val left = scaling * vel * (1.0 - invcurve * wheelbase / 2.0)
@@ -97,7 +98,7 @@ class PurePursuitFollower(
         val pt = poseToPoint(pos, angle, lookaheadpt)
         println("Robot Frame Point: (" + pt.first + ", " + pt.second + ")")
         val invcurve: Double =
-            (2.0 * pt.second) / (lookahead * lookahead/*pt.first * pt.first + pt.second * pt.second*/)
+            ((2.0 * CURVATURECONSTANT) * pt.second) / (lookahead * lookahead/*pt.first * pt.first + pt.second * pt.second*/)
         println("InvCurvature: $invcurve")
         println("Curvature: ${1.0 / invcurve}")
 
