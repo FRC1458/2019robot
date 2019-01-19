@@ -1,5 +1,7 @@
 package frc.team1458.lib.util.maths
 
+import kotlin.math.sin
+
 /**
  * Math utility classes
  */
@@ -38,6 +40,10 @@ object TurtleMaths {
 
     fun shift(value: Double, minA: Double, maxA: Double, minB: Double, maxB: Double) : Double {
         return minB + ((maxB - minB) / (maxA - minA)) * (value - minA)
+    }
+
+    fun turnCalculation(turningRadius: Double, startTurn: Pair<Double, Double>, numPoints: Int) {
+
     }
 
     fun calculateSD(numArray: List<Double>): Double {
