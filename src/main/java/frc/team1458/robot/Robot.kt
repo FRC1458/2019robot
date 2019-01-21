@@ -104,10 +104,10 @@ class Robot : BaseRobot() {
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
         // TODO change number of points: has significant effect on any sort of driving , Pair(20.0, 10.0), Pair(20.0, -10.0)
-        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(10.0, 15.0)), 400)
+        val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(15.0, 0.0), Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/), 400)
 
         // TODO Play with lookahead as it greatly affects stability of PP algorithm
-        val LOOKAHEAD = 1.50 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
+        val LOOKAHEAD = 2.5 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
         val SCALING = 1.0 // arbitrary(ish) factor
         val VELOCITY = 3.0 // feet per second overall speed (this would be speed if going perfectly straight)
         val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
@@ -121,6 +121,7 @@ class Robot : BaseRobot() {
             LiveDashboard.putOdom(odom.pose)
 
             var (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
+            println("XY : (${odom.pose.x}, ${odom.pose.y})")
 
             // Precautionary velocity limit enforcement
             if (l > MAXVEL) {
@@ -140,6 +141,11 @@ class Robot : BaseRobot() {
             dt.setDriveVelocity(l, r)
 
             delay(5)
+        }
+        while (isAutonomous && isEnabled) {
+            odom.update()
+            LiveDashboard.putOdom(odom.pose)
+            println("XY : (${odom.pose.x}, ${odom.pose.y})")
         }
     }
 
