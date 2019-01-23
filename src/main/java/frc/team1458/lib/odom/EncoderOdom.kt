@@ -43,9 +43,12 @@ class EncoderOdom(val left: DistanceSensor, val right: DistanceSensor, val gyro:
         // avg approximation, see 2004 update http://rossum.sourceforge.net/papers/DiffSteer/#d7
         val theta = TurtleMaths.constrainAngle((/*pose.theta +*/ gyroRads) / /*2.0*/ 1.0)
 
+        /*
         println("Gyro Angle: " + toDegrees(gyroRads))
         println("fwd: $fwd")
         println("theta: " + toDegrees(theta))
+        */
+
 
         pose = Pose2D(pose.x + fwd * cos(theta), pose.y + fwd * sin(theta), gyroRads)
     }
