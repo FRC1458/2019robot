@@ -39,30 +39,30 @@ object PathUtils {
 
         dTheta = if (turnMode == "left") dTheta else if (turnMode == "right") -dTheta else 0.0
 
-        for (i in 1..numberPoints)
+        for (i in 0..numberPoints)
         {
 
-            var rawPoints: Pair<Double, Double> = Pair(radius * cos(currentAngle + (dTheta * i)),
-                radius * sin(currentAngle + (dTheta * i))
-            )
+            var rawPoints: Pair<Double, Double> = Pair(radius * cos(currentAngle + (dTheta * i)) - radius * cos(currentAngleRad),
+                (radius * (sin(currentAngle + (dTheta * i)))) - (radius * sin(currentAngleRad)))
 
-            println(rawPoints) //point 1 should be somewhere on circle centered on origin
+
+            // println(rawPoints) //point 1 should be somewhere on circle centered on origin
 
             //rotate point right if turning left
             if (turnMode == "left") {
-                rawPoints = Pair(rawPoints.second, -rawPoints.first)
+                rawPoints = Pair(rawPoints.second, -1.0 * rawPoints.first)
             }
             else if (turnMode == "right")
             {
-                rawPoints = Pair(-rawPoints.second, rawPoints.first)
+                rawPoints = Pair(-1.0 * rawPoints.second, rawPoints.first)
             }
 
-            println(rawPoints) //after rotation should be
+            // println(rawPoints) //after rotation should be
 
-            var pointAdjusted: Pair<Double, Double> = Pair(rawPoints.first - radius * cos(currentAngleRad) + currentPosition.first,
-                (rawPoints.second - radius * sin(currentAngleRad) + currentPosition.second)* -1.0)
+            var pointAdjusted: Pair<Double, Double> = Pair(rawPoints.first + currentPosition.first,
+                (rawPoints.second + currentPosition.second))
 
-            array[(numberPoints) - i] = pointAdjusted
+            array[i] = pointAdjusted
         }
 
         return array
