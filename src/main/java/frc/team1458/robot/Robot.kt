@@ -32,7 +32,7 @@ class Robot : BaseRobot() {
         wheelDiameter = 0.5,
         closedLoopScaling = 6.0, // TODO: determine
 
-        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors maybe 0.0 for I
+        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors: maybe 0.0 for I
         pidConstantsLeft = PIDConstants(0.5, kI = 0.001, kD = 0.05, kF = 1.0 / 1798.8), // These are decent
         pidConstantsRight = PIDConstants(0.5, kI = 0.001, kD = 0.05, kF = 1.0 / 1806.4)// These are decent2
     )
@@ -116,6 +116,7 @@ class Robot : BaseRobot() {
             // println("XY : (${odom.pose.x}, ${odom.pose.y})")
 
             // Precautionary velocity limit enforcement
+            /*
             if (l > MAXVEL) {
                 //l = MAXVEL
                 // println("Warning: Velocity Limits Enforced!")
@@ -130,9 +131,10 @@ class Robot : BaseRobot() {
                 //r = (MAXVEL * -1.0)
                 // println("Warning: Velocity Limits Enforced!")
             }
+            */
             dt.setDriveVelocity(l, r)
 
-            delay(3)
+            delay(5)
         }
 
 
