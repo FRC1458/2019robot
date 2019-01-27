@@ -1,26 +1,20 @@
 package frc.team1458.robot
 
 import frc.team1458.lib.actuator.SmartMotor
-import frc.team1458.lib.actuator.Solenoid
 import frc.team1458.lib.sensor.*
 import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.util.flow.delay
 import frc.team1458.lib.core.BaseRobot
-import frc.team1458.lib.drive.TankDrive
 import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.odom.EncoderOdom
-
-import edu.wpi.first.networktables.*
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.drive.ClosedLoopTank
-import frc.team1458.lib.odom.Pose2D
 import frc.team1458.lib.pathfinding.PathUtils
 import frc.team1458.lib.pathfinding.Pose2DPathfinding
 import frc.team1458.lib.pathfinding.PurePursuitFollower
 import frc.team1458.lib.util.LiveDashboard
-import frc.team1458.lib.util.flow.systemTimeMillis
-import frc.team1458.lib.util.flow.systemTimeSeconds
+import kotlin.math.min
+import kotlin.math.sqrt
 
 class Robot : BaseRobot() {
 
@@ -35,8 +29,8 @@ class Robot : BaseRobot() {
         closedLoopScaling = 6.0, // TODO: determine
 
         // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors: maybe 0.0 for I
-        pidConstantsLeft = PIDConstants(0.6, kI = 0.00/*3*/, kD = 0.00, kF = 1.0 / 1798.8), // These are decent
-        pidConstantsRight = PIDConstants(0.750, kI = 0.00/*5*/, kD = 0.05, kF = 1.0 / 1806.4)// These are decent2
+        pidConstantsLeft = PIDConstants(0.6, kI = 0.001/*3*/, kD = 0.00, kF = 1.0 / 1798.8), // These are decent
+        pidConstantsRight = PIDConstants(0.750, kI = 0.001/*5*/, kD = 0.05, kF = 1.0 / 1806.4)// These are decent2
     )
 
     val drivetrainInverted: Boolean = false
@@ -95,18 +89,25 @@ class Robot : BaseRobot() {
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
 
         // TODO change number of points: has significant effect on any sort of driving , Pair(20.0, 10.0), Pair(20.0, -10.0)
-        val turnPath = PathUtils.interpolateTurnArcWithAngle(90.0, 0.0, Pair(15.0, 0.0), "left", 15, 5.0)
-        val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 15, "left")
-        val path = PathUtils.generateLinearPath(arrayOf(*turnPath, Pair(20.0, 20.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
+        // val turnPath = PathUtils.interpolateTurnArcWithAngle(90.0, 0.0, Pair(15.0, 0.0), "left", 15, 5.0)
+        val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 30, "left")
+        val path_curvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
+        val path = PathUtils.removeCurvature(path_curvature)
+
 
         // TODO Play with lookahead as it greatly affects stability of PP algorithm
-        val LOOKAHEAD = 1.80 // 1.8 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET
+        val LOOKAHEAD = 1.80 // 1.8 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET measured in FEET
         val SCALING = 0.98 // arbitrary(ish) factor
         val VELOCITY = 5.0 // feet per second overall speed (this would be speed if going perfectly straight)
-        val MAXVEL = 2.0 // Absolute maximum velocity the robot can spin the wheels
         val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
         val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.65)
         val returnHome = false
+
+        val MAX_LINVEL = 5.0
+        val MAX_LINACCEL = 3.5
+        val MAX_CENTRIPITAL = 3.5
+
+        val maxvel = path_curvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
 
 
         // println("\nEncoder Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
@@ -141,7 +142,7 @@ class Robot : BaseRobot() {
         }
 
 
-        val homePath = PathUtils.generateLinearPath(arrayOf(Pair(odom.pose.x, odom.pose.y) , Pair(0.0, 0.0)), 400)
+        /*val homePath = PathUtils.generateLinearPath(arrayOf(Pair(odom.pose.x, odom.pose.y) , Pair(0.0, 0.0)), 400)
         val ppReturnHome = PurePursuitFollower(homePath, LOOKAHEAD, SCALING, WHEELBASE, 0.55)
 
         delay(2000)
@@ -155,7 +156,7 @@ class Robot : BaseRobot() {
             dt.setDriveVelocity(l, r)
 
             delay(3)
-        }
+        }*/
     }
 
     override fun teleopInit() {
@@ -222,6 +223,7 @@ class Robot : BaseRobot() {
         // rewind mechanism, run compressor, etc
 
         val turnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 15, "left")
+
         for (i in 0..turnPath.size-1) {
             println(turnPath[i])
         }

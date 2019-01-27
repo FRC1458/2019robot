@@ -88,14 +88,17 @@ class PurePursuitFollower(
     fun finished(pos: Pair<Double, Double>): Boolean = (TurtleMaths.distance(pos, points.last()) < targetTolerance)
 
     // Takes the position and returns the velocity values for the drivetrain
-    fun getControl(pos: Pair<Double, Double>, angle: Double, speed: Double): Pair<Double, Double> {
+    fun getControl(pos: Pair<Double, Double>, angle: Double, speed: Double, dash: Boolean = true): Pair<Double, Double> {
         if (finished(pos)) {
             return Pair(0.0, 0.0) // Stops robot if within the target tolerance
         }
 
         val lookaheadpt = getLookahead(pos) // TODO Compare new lookahead function
         // val lookaheadpt = getClosestPathPoint(pos)
-        LiveDashboard.putPath(lookaheadpt.first, lookaheadpt.second, 0.0)
+
+        if (dash) {
+            LiveDashboard.putPath(lookaheadpt.first, lookaheadpt.second, 0.0)
+        }
 
         val pt = poseToPoint(pos, angle, lookaheadpt)
         // println("Robot Frame Point: (" + pt.first + ", " + pt.second + ")")

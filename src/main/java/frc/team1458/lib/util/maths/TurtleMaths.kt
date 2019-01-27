@@ -1,13 +1,14 @@
 package frc.team1458.lib.util.maths
 
-import kotlin.math.sin
-
 /**
  * Math utility classes
  */
 object TurtleMaths {
 
-    val TWOPI = 2.0 * 3.14159265
+    private const val TWOPI = 2.0 * 3.14159265
+
+    fun linspace(start: Double, end: Double, n: Int): Array<Double> =
+        (0 until n).distinct().map { start + ((it.toDouble() / n) * (end - start)) }.toTypedArray()
 
     fun constrainAngle(angle: Double) : Double {
         var a = angle
@@ -21,20 +22,18 @@ object TurtleMaths {
     }
 
     fun constrain(value: Double, min: Double, max: Double) : Double {
-        if(value > max) {
-            return max
-        } else if (value < min) {
-            return min
-        } else {
-            return value
+        return when {
+            value > max -> max
+            value < min -> min
+            else -> value
         }
     }
 
     fun deadband(value: Double, deadband: Double = 0.15): Double {
-        if(Math.abs(value) < deadband) {
-            return 0.0
+        return if(Math.abs(value) < deadband) {
+            0.0
         } else {
-            return value
+            value
         }
     }
 
@@ -68,5 +67,5 @@ object TurtleMaths {
     }
 }
 
-fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
-fun Float.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
+fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)!!
+fun Float.format(digits: Int) = java.lang.String.format("%.${digits}f", this)!!
