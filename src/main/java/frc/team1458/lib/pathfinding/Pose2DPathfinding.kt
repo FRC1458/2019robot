@@ -3,8 +3,7 @@ package frc.team1458.lib.pathfinding
 import frc.team1458.lib.odom.Pose2D
 import frc.team1458.lib.util.maths.TurtleMaths
 
-class Pose2DPathfinding(val x: Double, val y: Double, theta: Double = 0.0) {
-    val theta = theta
+class Pose2DPathfinding(val x: Double, val y: Double, val theta: Double = 0.0) {
 
     companion object {
         fun interp(pose1: Pose2D, pose2: Pose2D, ratio: Double): Pose2D {

@@ -10,7 +10,7 @@ plugins {
     id 'application'
 }
 
-def ROBOT_CLASS = "frc.team1458.robot.Test" // "frc.team1458.robot.Main"
+def ROBOT_CLASS = "frc.team1458.robot.Main" // "frc.team1458.robot.Main"
 def TEAM_NUMBER = 1458
 def DEBUG = false
 
@@ -62,6 +62,10 @@ dependencies {
     compile "com.github.jkcclemens:khttp:0.1.0"
     implementation 'com.github.jkcclemens:khttp:0.1.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0"
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
+
 }
 
 jar {

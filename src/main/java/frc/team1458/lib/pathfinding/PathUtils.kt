@@ -1,28 +1,34 @@
 package frc.team1458.lib.pathfinding
 
-import frc.team1458.lib.odom.Pose2D
 import frc.team1458.lib.util.maths.TurtleMaths
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator
+import kotlin.math.*
 
 object PathUtils {
-    fun generateLinearPath(points: Array<Pair<Double, Double>>, numPoints: Int): Array<Pair<Double, Double>> {
-        val out: ArrayList<Pair<Double, Double>> = ArrayList(numPoints)
-        var length = points.toList().zipWithNext { a, b -> TurtleMaths.distance(a, b) }.sum()
-        var gap = length / (numPoints.toDouble() - 1.0)
+    fun generateLinearPath(
+        points: Array<Triple<Double, Double, Double>>,
+        numPoints: Int
+    ): Array<Triple<Double, Double, Double>> {
+        val out: ArrayList<Triple<Double, Double, Double>> = ArrayList(numPoints)
+        val length = points.toList()
+            .zipWithNext { a, b -> TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) }.sum()
+        val gap = length / (numPoints.toDouble() - 1.0)
 
         for ((a, b) in points.toList().zipWithNext()) {
-            val numPts = (TurtleMaths.distance(a, b) / gap).toInt()
+            val numPts = (TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) / gap).toInt()
 
             for (i in 0..numPts) {
                 val x = i.toDouble() / numPts.toDouble()
                 val xo = 1.0 - x
-                out.add(Pair(a.first * xo + b.first * x, a.second * xo + b.second * x))
+                out.add(Triple(a.first * xo + b.first * x, a.second * xo + b.second * x, a.third))
             }
         }
 
         return out.toTypedArray()
+    }
+
+    fun removeCurvature(points: Array<Triple<Double, Double, Double>>): Array<Pair<Double, Double>> {
+        return points.map { Pair(it.first, it.second) }.toTypedArray()
     }
 
     //angle is in degrees, currentAngle in degrees. only call this function once.
@@ -33,11 +39,11 @@ object PathUtils {
         radius: Double
     ): Array<Pair<Double, Double>> {
 
-        var turnAngleRad = turnAngle * (Math.PI / 180.0)
-        var currentAngleRad = currentAngle * (Math.PI / 180.0)
+        val turnAngleRad = turnAngle * (Math.PI / 180.0)
+        val currentAngleRad = currentAngle * (Math.PI / 180.0)
 
         //dTheta is in
-        var array: Array<Pair<Double, Double>> = Array<Pair<Double, Double>>(numberPoints + 1) { i -> currentPosition }
+        val array: Array<Pair<Double, Double>> = Array(numberPoints + 1) { i -> currentPosition }
         var dTheta = turnAngleRad / numberPoints.toDouble()
 
         dTheta = if (turnMode == "left") dTheta else if (turnMode == "right") -dTheta else 0.0
@@ -61,7 +67,7 @@ object PathUtils {
 
             // println(rawPoints) //after rotation should be
 
-            var pointAdjusted: Pair<Double, Double> = Pair(
+            val pointAdjusted: Pair<Double, Double> = Pair(
                 rawPoints.first + currentPosition.first,
                 (rawPoints.second + currentPosition.second)
             )
@@ -77,74 +83,65 @@ object PathUtils {
         endPoint: Pose2DPathfinding,
         numberPoints: Int,
         turnMode: String
-    ): Array<Pair<Double, Double>> {
+    ): Array<Triple<Double, Double, Double>> {
+        var newX: Double
+        var newY: Double
 
         //convert angles of points to degrees
-        var vector1Angle = (startPoint.theta * (Math.PI / 180.0)) + 0.000001
-        var vector2Angle = (endPoint.theta * (Math.PI / 180.0)) + 0.000001
-        println("start angle: " + vector1Angle)
-        println("end angle: " + vector2Angle)
+        val vector1Angle = (startPoint.theta * (Math.PI / 180.0)) + 0.000001
+        val vector2Angle = (endPoint.theta * (Math.PI / 180.0)) + 0.000001
 
         //create direction vectors for dot product
-        var vector1 = Pair(Math.cos(vector1Angle), Math.sin(vector1Angle))
-        println("Vector 1: " + vector1)
+        val vector1 = Pair(Math.cos(vector1Angle), Math.sin(vector1Angle))
 
-        var vector2 = Pair(Math.cos(vector2Angle), Math.sin(vector2Angle))
-        println("Vector 2: " + vector2)
+        val vector2 = Pair(Math.cos(vector2Angle), Math.sin(vector2Angle))
 
-        var dotProduct: Double = (vector1.first * vector2.first) + (vector1.second * vector2.second)
-        println("Dot Product: " + dotProduct)
+        val dotProduct: Double = (vector1.first * vector2.first) + (vector1.second * vector2.second)
 
         // cos(theta) = vector1 . vector2 / (||vector1|| ||vector2||)
         var angleBetweenVectors = Math.acos(dotProduct) //both vectors have magnitude 1
-        println("Angle Between Vectors: : " + angleBetweenVectors)
 
         //finding external angle that's formed when vectors extend outward
         angleBetweenVectors =
             if (dotProduct >= 0) Math.abs(Math.PI - angleBetweenVectors) else Math.abs(angleBetweenVectors)
 
-        var centralAngle = Math.PI - angleBetweenVectors //quadrilateral
-        println("Central Angle: " + centralAngle)
+        val centralAngle = Math.PI - angleBetweenVectors //quadrilateral
 
-        var distancePoints = ((startPoint.x - endPoint.x).pow(2) + (startPoint.y - endPoint.y).pow(2)).pow(.5)
-        println("Distance Points: " + distancePoints)
-        var radius = (distancePoints / 2) / Math.sin(centralAngle / 2) //triangle has angle centralAngle / 2
-        println("radius: " + radius)
+        val distancePoints = ((startPoint.x - endPoint.x).pow(2) + (startPoint.y - endPoint.y).pow(2)).pow(.5)
 
-        var centerx: Double =
+        val radius = (distancePoints / 2) / Math.sin(centralAngle / 2) //triangle has angle centralAngle / 2
+
+        val centerX: Double =
             ((Math.tan(vector1Angle) * endPoint.x)
                     + (Math.tan(vector1Angle) * Math.tan(vector2Angle) * endPoint.y)
                     - (Math.tan(vector1Angle) * Math.tan(vector2Angle) * startPoint.y)
                     - (Math.tan(vector2Angle) * startPoint.x)) /
                     (Math.tan(vector1Angle) - Math.tan(vector2Angle))
 
-        println("centerx: " + centerx)
 
         //y = mx + b
-        var centery: Double =
-            -((1.0 / Math.tan(vector1Angle)) * (centerx - startPoint.x)) + startPoint.y
-        println("centery: " + centery)
+        val centerY: Double =
+            -((1.0 / Math.tan(vector1Angle)) * (centerX - startPoint.x)) + startPoint.y
 
         var dTheta = centralAngle / numberPoints.toDouble()
-        println("dTheta: " + dTheta)
 
         //a left turn is a counterclockwise rotation, and use a negative angle in
         //rotation matrix
-        dTheta = if (turnMode == "left") dTheta else if (turnMode == "right") dTheta else 0.0
+        dTheta = if (turnMode == "left") dTheta else if (turnMode == "right") -dTheta else 0.0
 
-        var arrayPoints = Array<Pair<Double, Double>>(size = numberPoints + 1) { i -> Pair(0.0, 0.0) }
+        val arrayPoints =
+            Array(size = numberPoints + 1) { i -> Triple(0.0, 0.0, radius) }
 
         for (i in 0..numberPoints) {
 
-            var newX = ((startPoint.x - centerx) * Math.cos(dTheta * i))
-            - ((startPoint.y - centery) * Math.sin(dTheta * i)) + centerx
-            println("[ " + ((startPoint.x - centerx) * Math.cos(dTheta * i)) + ", " + (-((startPoint.y - centery) * Math.sin(dTheta * i))) + " ]")
+            newX =
+                ((startPoint.x - centerX) * Math.cos(dTheta * i)) - ((startPoint.y - centerY) * Math.sin(dTheta * i)) + centerX
 
-            var newY = ((startPoint.x - centerx) * Math.sin(dTheta * i))
-            + ((startPoint.y - centery) * Math.cos(dTheta * i)) + centery
-            println("[ " + ((startPoint.x - centerx) * Math.sin(dTheta * i)) + ", " + ((startPoint.y - centery) * Math.cos(dTheta * i)))
+            newY =
+                ((startPoint.x - centerX) * Math.sin(dTheta * i)) + ((startPoint.y - centerY) * Math.cos(dTheta * i)) + centerY
 
-            arrayPoints[i] = Pair(newX, newY)
+            arrayPoints[i] = Triple(newX, newY, radius)
+
             /*
                gx = (sx-cx)*cos((i/4)*ψ)-(sy-cy)*sin((i/4)*ψ) + cx
                gy = (sx-cx)*sin((i/4)*ψ)+(sy-cy)*cos((i/4)*ψ) + cy
@@ -157,4 +154,67 @@ object PathUtils {
 
         return arrayPoints
     }
+
+    fun generateVXGraph(
+        distance: Double,
+        max_vel: Array<Double>,
+        max_linear_accel: Double,
+        start_vel: Double,
+        end_vel: Double
+    ): Pair<Array<Double>, Array<Double>> {
+        val n = max_vel.size
+        val x = TurtleMaths.linspace(0.0, distance, n)
+        val v = TurtleMaths.linspace(0.0, 0.0, n)
+
+        v[0] = start_vel
+        v[n - 1] = end_vel
+
+        for (i in (1 until n)) {
+            v[i] = min(max_vel[i], sqrt(v[i - 1].pow(2.0) + 2 * max_linear_accel * (x[i] - x[i - 1])))
+        }
+
+        v[0] = start_vel
+        v[n - 1] = end_vel
+
+        for (i in (1 until n).reversed()) {
+            v[i] = min(v[i], sqrt(v[i + 1].pow(2.0) + 2 * max_linear_accel * (x[i + 1] - x[i])))
+        }
+
+        return Pair(x, v)
+    }
+
+    fun xvTotv(x: Array<Double>, v: Array<Double>): Pair<Array<Double>, Array<Double>> {
+        val n = x.size
+        val t = TurtleMaths.linspace(0.0, 0.0, n)
+        var dt: Double
+        var dx: Double
+        var a: Double
+
+        for (i in 1 until n) {
+            dx = (x[i] - x[i - 1])
+            a = (v[i].pow(2.0) - v[i - 1].pow(2.0)) / (2.0 * dx)
+
+            if (abs(a) < 0.0001) {
+                dt = dx / v[i - 1]
+            } else {
+                var root = v[i - 1].pow(2.0) - 4.0 * 0.5 * (a) * -(dx)
+
+                if (abs(root) < 0.0001) {
+                    root = 0.0
+                }
+
+                dt = (-v[i - 1] + sqrt(root)) / (a)
+            }
+
+            t[i] = t[i - 1] + dt
+        }
+        return Pair(t, v)
+
+    }
+
+    fun consistentTime(t: Array<Double>, v: Array<Double>, dt: Double): Array<Double> {
+        val func = LinearInterpolator().interpolate(t.toDoubleArray(), v.toDoubleArray())
+        return TurtleMaths.linspace(0.0, t.last(), (t.last() / dt).roundToInt()).map { func.value(it) }.toTypedArray()
+    }
+
 }
