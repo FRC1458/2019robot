@@ -6,6 +6,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # Custom Stuff
+.idea/
 .idea/modules/2019robot.main.iml
 .idea/modules/2019robot.test.iml
 
