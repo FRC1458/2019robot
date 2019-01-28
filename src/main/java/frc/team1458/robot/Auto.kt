@@ -90,7 +90,7 @@ class Auto(
         drivetrain.setDriveVelocity(0.0, 0.0)
     }
 
-    fun resetAutonomousSensors(zeroEncoders: Boolean = true,
+    private fun resetAutonomousSensors(zeroEncoders: Boolean = true,
                                zeroGyroscope: Boolean = true,
                                resetOdometry: Boolean = true,
                                clearDashboard: Boolean = true)
