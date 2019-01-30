@@ -17,7 +17,9 @@ class Auto(
     private val gyroscope: AngleSensor = odometry.gyro,
     private val automaticSpeedControl: Boolean = false, // TODO Implement
     private val putToDashboard: Boolean = false,
-    clearSensorsOnInit: Boolean = true
+    clearSensorsOnInit: Boolean = true,
+    private val velocities: Array<Double> = arrayOf()
+
 ) {
     private val absoluteMaximumVelocity = 8.00 // feet/second - Absolute maximum velocity the robot can spin the wheels
     private val setVelocity = 4.00 // feet/second - Overall speed (this would be speed if going perfectly straight)
@@ -25,6 +27,7 @@ class Auto(
     private val purePursuitTargetTolerance = 0.60 // feet - Tolerance to reaching the point being followed
     private val wheelbaseDistance = 1.96 // feet - Distance between wheels; could change as a tuning parameter possibly
     private val lookaheadDistance = 1.80 // feet - Higher values make smoother, easier-to-follow path but less precise
+
 
      init {
          if (clearSensorsOnInit) {
@@ -48,6 +51,7 @@ class Auto(
             resetAutonomousSensors()
         }
 
+        println("Before while")
         while (robot.isAutonomous && robot.isEnabled && !purePursuitFollower.finished(
                 Pair(odometry.pose.x, odometry.pose.y))
         ) {
@@ -56,6 +60,10 @@ class Auto(
             if (putToDashboard) {
                 LiveDashboard.putOdom(odometry.pose)
             }
+
+            var index = purePursuitFollower.getClosestPathPoint(Pair(odometry.pose.x, odometry.pose.y))
+
+
 
             driveVelocity =
                 purePursuitFollower.getControl(Pair(odometry.pose.x, odometry.pose.y), odometry.pose.theta, setVelocity, putToDashboard)
@@ -66,6 +74,7 @@ class Auto(
             drivetrain.setDriveVelocity(driveVelocity.first, driveVelocity.second)
 
             delay(5) // TODO Maybe try maximum throughput so disable?
+            println("Ran once")
         }
 
         // TODO Make sure ramp down velocity works / needs tweaks

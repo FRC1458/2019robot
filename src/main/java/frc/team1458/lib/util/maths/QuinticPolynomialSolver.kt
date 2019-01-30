@@ -26,16 +26,20 @@ class QuinticPolynomialSolver(
     )
 
     private val bMatrix: Matrix<Double> = create(
-        arrayOf(
-            doubleArrayOf(
-                xe - a0 - a1 * T - a2 * T.pow(2.0),
-                vxe - a1 - 2.0 * a2 * T,
-                axe - 2.0 * a2
-            )
+        doubleArrayOf(
+            xe - a0 - a1 * T - a2 * T.pow(2.0),
+            vxe - a1 - 2.0 * a2 * T,
+            axe - 2.0 * a2
         )
     )
 
-    private val x: Matrix<Double> = aMatrix * bMatrix
+    init {
+        println(aMatrix)
+        println(bMatrix)
+    }
+
+
+    private val x: Matrix<Double> = bMatrix * aMatrix
 
     private val a3 = x[0]
     private val a4 = x[1]

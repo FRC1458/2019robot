@@ -81,7 +81,7 @@ object QuinticPolynomialPlanner {
                 ay = yqp.calculateSecondDerivative(t)
                 a = hypot(ax, ay)
 
-                if ((rv.size >= 2) && (rv[-1] - rv[-2] < 0.0)) {
+                if ((rv.size >= 2) && (rv[rv.size-1] - rv[rv.size-2] < 0.0)) {
                     a *= -1.0
                 }
 
@@ -91,7 +91,7 @@ object QuinticPolynomialPlanner {
                 jy = yqp.calculateThirdDerivative(t)
                 j = hypot(jx, jy)
 
-                if ((ra.size >= 2) && (ra[-1] - ra[-2] < 0.0)) {
+                if ((ra.size >= 2) && (ra[ra.size - 1] - ra[ra.size-2] < 0.0)) {
                     j *= -1.0
                 }
 

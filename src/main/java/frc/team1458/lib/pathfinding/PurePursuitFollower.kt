@@ -30,7 +30,7 @@ class PurePursuitFollower(
     }
 
     // Get the closest point to the robot on the path, does not affect lastLookahead variable
-    private fun getClosestPathPoint(robotPos: Pair<Double, Double>): Pair<Double, Double> {
+    fun getClosestPathPoint(robotPos: Pair<Double, Double>): Int {
         var closestIndex = 0
         var closestDist = 0.0
         var dist: Double
@@ -49,7 +49,7 @@ class PurePursuitFollower(
 
         }
 
-        return points[closestIndex]
+        return closestIndex // points[closestIndex]
     }
 
     // Applies translation as well as rotation matrix to convert the points to robot coordinate space

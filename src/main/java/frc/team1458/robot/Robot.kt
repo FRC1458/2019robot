@@ -9,10 +9,10 @@ import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.odom.EncoderOdom
 import frc.team1458.lib.drive.ClosedLoopTank
-import frc.team1458.lib.pathfinding.PathUtils
-import frc.team1458.lib.pathfinding.Pose2DPathfinding
-import frc.team1458.lib.pathfinding.PurePursuitFollower
+import frc.team1458.lib.pathfinding.*
 import frc.team1458.lib.util.LiveDashboard
+import frc.team1458.lib.util.flow.systemTimeMillis
+import frc.team1458.lib.util.maths.TurtleMaths
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -52,6 +52,9 @@ class Robot : BaseRobot() {
     val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
     val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
 
+    var velocities: Array<Double> = arrayOf()
+    var times: Array<Double> = arrayOf()
+
     override fun robotSetup() {
         // println("Setup")
 
@@ -70,6 +73,8 @@ class Robot : BaseRobot() {
     override fun runAuto() {
         println("Warning: Sandstorm")
 
+
+        /*
         // Clear the visualizer before we start auto
         LiveDashboard.endPath()
 
@@ -80,6 +85,7 @@ class Robot : BaseRobot() {
         odom.clear()
         odom.setup()
         odom.update()
+        */
 
         // Square path
         // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
@@ -87,56 +93,35 @@ class Robot : BaseRobot() {
         // TODO change number of points: has significant effect on any sort of driving , Pair(20.0, 10.0), Pair(20.0, -10.0)
         // val turnPath = PathUtils.interpolateTurnArcWithAngle(90.0, 0.0, Pair(15.0, 0.0), "left", 15, 5.0)
         val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 30, "left")
-        val path_curvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
-        val path = PathUtils.removeCurvature(path_curvature)
+        val pathCurvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
+        val pathNoCurvature = PathUtils.removeCurvature(pathCurvature)
 
-
-        // TODO Play with lookahead as it greatly affects stability of PP algorithm
-        val LOOKAHEAD = 1.80 // 1.8 // higher values make smoother, easier-to-follow path but less precise following, measured in FEET measured in FEET
-        val SCALING = 0.98 // arbitrary(ish) factor
-        val VELOCITY = 5.0 // feet per second overall speed (this would be speed if going perfectly straight)
-        val WHEELBASE = 1.96 // feet - distance between wheels - could change as a tuning parameter possibly
-        val pp = PurePursuitFollower(path, LOOKAHEAD, SCALING, WHEELBASE, 0.65)
-        val returnHome = false
 
         val MAX_LINVEL = 5.0
         val MAX_LINACCEL = 3.5
         val MAX_CENTRIPITAL = 3.5
 
-        val maxvel = path_curvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
+
+        val length = pathNoCurvature.toList()
+            .zipWithNext { a, b -> TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) }.sum()
+
+        val maxvel = pathCurvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
 
 
-        // println("\nEncoder Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        val (x, v) = PathUtils.generateVXGraph(length, maxvel.toTypedArray(), MAX_LINACCEL, 0.0, 0.0)
+        val (t, vz) = PathUtils.xvTotv(x, v)
 
-        while (isAutonomous && isEnabled && !pp.finished(Pair(odom.pose.x, odom.pose.y))) {
-            odom.update()
-            LiveDashboard.putOdom(odom.pose)
+        for (i in 0 until t.size) {
+            println("TVZ ${t[i]}, ${vz[i]}")
 
-            val (l, r) = pp.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
-
-            dt.setDriveVelocity(l, r)
-
-            delay(5)
         }
 
+        val vTimed = PathUtils.consistentTime(t, vz, 0.02)
 
-        /*val homePath = PathUtils.generateLinearPath(arrayOf(Pair(odom.pose.x, odom.pose.y) , Pair(0.0, 0.0)), 400)
-        val ppReturnHome = PurePursuitFollower(homePath, LOOKAHEAD, SCALING, WHEELBASE, 0.55)
+        val auto = Auto(this, dt, odom, gyro, automaticSpeedControl = false, putToDashboard = true) // v
 
-        delay(2000)
-
-        while (returnHome && isAutonomous && isEnabled && !ppReturnHome.finished(Pair(odom.pose.x, odom.pose.y))) {
-            odom.update()
-            LiveDashboard.putOdom(odom.pose)
-
-            var (l, r) = ppReturnHome.getControl(Pair(odom.pose.x, odom.pose.y), odom.pose.theta, VELOCITY)
-
-            dt.setDriveVelocity(l, r)
-
-            delay(3)
-        }*/
+        auto.startBasicPurePursuit(pathNoCurvature, 3.0)
     }
-
     override fun teleopInit() {
         // likely nothing here
         println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
@@ -204,22 +189,50 @@ class Robot : BaseRobot() {
     override fun runTest() {
         // rewind mechanism, run compressor, etc
 
+        /*
         val turnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 15, "left")
 
         for (i in 0 until turnPath.size) {
             println(turnPath[i])
         }
+        */
 
-        delay(20000)
+
+        val MAX_LINVEL = 5.0
+        val MAX_LINACCEL = 3.5
+        val MAX_CENTRIPITAL = 3.5
+
+        val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 30, "left")
+        val pathCurvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
+        val pathNoCurvature = PathUtils.removeCurvature(pathCurvature)
+
+        val length = pathNoCurvature.toList()
+            .zipWithNext { a, b -> TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) }.sum()
+
+        val maxvel = pathCurvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
+
+
+        val (x, v) = PathUtils.generateVXGraph(length, maxvel.toTypedArray(), MAX_LINACCEL, 0.0, 0.0)
+        val (t, vz) = PathUtils.xvTotv(x, v)
+
+        velocities = v
+        times = t
+
+        for (i in 0 until t.size) {
+            println("TVZ ${t[i]}, ${vz[i]}")
+        }
+
+        val vTimed = PathUtils.consistentTime(t, vz, 0.02)
+
+
+
     }
 
-    override fun robotDisabled(
-    ) {
-        println("\nEncoder End Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
-        LiveDashboard.putOdom(odom.pose)
+    override fun robotDisabled() {
+        // LiveDashboard.putOdom(odom.pose)
     }
 
     override fun disabledPeriodic() {
-        LiveDashboard.putOdom(odom.pose)
+        // LiveDashboard.putOdom(odom.pose)
     }
 }

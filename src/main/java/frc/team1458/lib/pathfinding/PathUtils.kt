@@ -124,6 +124,7 @@ object PathUtils {
             -((1.0 / Math.tan(vector1Angle)) * (centerX - startPoint.x)) + startPoint.y
 
         var dTheta = centralAngle / numberPoints.toDouble()
+        var curvatureAtPt = 1000000.0
 
         //a left turn is a counterclockwise rotation, and use a negative angle in
         //rotation matrix
@@ -140,7 +141,7 @@ object PathUtils {
             newY =
                 ((startPoint.x - centerX) * Math.sin(dTheta * i)) + ((startPoint.y - centerY) * Math.cos(dTheta * i)) + centerY
 
-            arrayPoints[i] = Triple(newX, newY, radius)
+            arrayPoints[i] = Triple(newX, newY, curvatureAtPt)
 
             /*
                gx = (sx-cx)*cos((i/4)*ψ)-(sy-cy)*sin((i/4)*ψ) + cx
@@ -162,6 +163,7 @@ object PathUtils {
         start_vel: Double,
         end_vel: Double
     ): Pair<Array<Double>, Array<Double>> {
+
         val n = max_vel.size
         val x = TurtleMaths.linspace(0.0, distance, n)
         val v = TurtleMaths.linspace(0.0, 0.0, n)
@@ -176,7 +178,7 @@ object PathUtils {
         v[0] = start_vel
         v[n - 1] = end_vel
 
-        for (i in (1 until n).reversed()) {
+        for (i in (1 until n-1).reversed()) {
             v[i] = min(v[i], sqrt(v[i + 1].pow(2.0) + 2 * max_linear_accel * (x[i + 1] - x[i])))
         }
 
@@ -184,6 +186,7 @@ object PathUtils {
     }
 
     fun xvTotv(x: Array<Double>, v: Array<Double>): Pair<Array<Double>, Array<Double>> {
+
         val n = x.size
         val t = TurtleMaths.linspace(0.0, 0.0, n)
         var dt: Double
@@ -207,7 +210,11 @@ object PathUtils {
             }
 
             t[i] = t[i - 1] + dt
+
+
         }
+
+
         return Pair(t, v)
 
     }
