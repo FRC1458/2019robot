@@ -57,6 +57,8 @@ class Robot : BaseRobot() {
 
     override fun robotSetup() {
         // println("Setup")
+        
+        HelloWorld.main(null)
 
         // Don't zero later now
         dt.leftMaster.connectedEncoder.zero()
