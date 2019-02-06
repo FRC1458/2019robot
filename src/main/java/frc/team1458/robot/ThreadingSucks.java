@@ -53,7 +53,7 @@ public class ThreadingSucks {
             out.println("==================");
             out.println("ROBOT DUMP INFO");
             out.println("==================");
-            //#TODO ADD OI INFO WHEN ROBOT CAN BE RAN
+            //#TODO Put all on one line without explination of which value is.
             out.println("Intake enabled : "+rob.getIntakeEnabled());
             out.println("Drive train inverted : "+rob.getDrivetrainInverted());
             out.println("DT : "+rob.getDt());
@@ -77,6 +77,7 @@ public class ThreadingSucks {
             out.println("isNewDataAvailable : "+rob.isNewDataAvailable());
             out.println("isNewDataAvailable : "+rob.isNewDataAvailable());
             out.println("isTest : "+rob.isTest());
+
 
             out.println("==================");
             out.println("OI DUMP INFO");
