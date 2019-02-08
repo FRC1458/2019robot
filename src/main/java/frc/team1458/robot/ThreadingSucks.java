@@ -1,27 +1,24 @@
 package frc.team1458.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Threads;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import frc.team1458.lib.input.FlightStick;
-import frc.team1458.robot.*;
+import java.util.ArrayList;
 
 public class ThreadingSucks {
     RobotBase robot = new Robot();
     OI oi = new OI();
     Robot rob = new Robot();
-    public static void main(String[] args) throws IOException{
+
+    public static void main(String[] args) throws IOException {
         try {
             RobotBase robot = new Robot();
             OI oi = new OI();
             Robot rob = new Robot();
-        }
-        catch(NullPointerException e) {
-            System.out.println("ERROR: Code is not bootable from a robot, yet is ran by a standing computer.");
+        } catch (NullPointerException e) {
+            System.out.print("ERROR: Code is not bootable from a robot, yet is ran by a standing computer.");
             return;
         }
         RobotBase robot = new Robot();
@@ -29,9 +26,8 @@ public class ThreadingSucks {
         Robot rob = new Robot();
 
 
-
-        for( int i = 0; i < 5; i++) {
-            myThread t = new myThread(i,rob,oi);
+        for (int i = 0; i != -1; i++) {
+            myThread t = new myThread(i, rob, oi);
             t.start();
         }
     }
@@ -42,61 +38,52 @@ public class ThreadingSucks {
         OI oi;
         Robot rob;
 
-        public myThread(int i, Robot rob, OI oi)throws IOException {
+        public myThread(int i, Robot rob, OI oi) throws IOException {
             out = new PrintWriter(new FileWriter("LOG_DUMP.csv"));
             this.rob = rob;
             this.oi = oi;
         }
 
 
-        public void run(){
-            out.println("==================");
-            out.println("ROBOT DUMP INFO");
-            out.println("==================");
-            //#TODO Put all on one line without explination of which value is.
-            out.println("Intake enabled : "+rob.getIntakeEnabled());
-            out.println("Drive train inverted : "+rob.getDrivetrainInverted());
-            out.println("DT : "+rob.getDt());
-            out.println("Elv1 : "+rob.getElev1());
-            out.println("Elv2 : "+rob.getElev2());
-            out.println("Elevator enabled : "+rob.getElevatorEnabled());
-            out.println("Elevator speed : "+rob.getElevatorSpeed());
-            out.println("Gyro : "+rob.getGyro());
-            out.println("Intake 1 : "+rob.getIntake1());
-            out.println("Intake enabled : "+rob.getIntakeEnabled());
-            out.println("DriveTrain Inverted : "+rob.getDrivetrainInverted());
-            out.println("Mag1 : "+rob.getMag1());
-            out.println("Mag2 : "+rob.getMag2());
-            out.println("Times : "+rob.getTimes());
-            out.println("Velocities : "+rob.getVelocities());
+        public void run() {
 
-            out.println("---------");
-            out.println("isAutonomous : "+rob.isAutonomous());
-            out.println("isDisabled : "+rob.isDisabled());
-            out.println("isEnabled : "+rob.isEnabled());
-            out.println("isNewDataAvailable : "+rob.isNewDataAvailable());
-            out.println("isNewDataAvailable : "+rob.isNewDataAvailable());
-            out.println("isTest : "+rob.isTest());
+            ArrayList everything = new ArrayList();
 
+            //Yes i know this is ling but it really makes it readable code.
+            everything.add(rob.getIntakeEnabled());
+            everything.add(rob.getDrivetrainInverted());
+            everything.add(rob.getDt());
+            everything.add(rob.getElev1());
+            everything.add(rob.getElev2());
+            everything.add(rob.getElevatorEnabled());
+            everything.add(rob.getElevatorSpeed());
+            everything.add(rob.getGyro());
+            everything.add(rob.getIntake1());
+            everything.add(rob.getIntakeEnabled());
+            everything.add(rob.getDrivetrainInverted());
+            everything.add(rob.getMag1());
+            everything.add(rob.getMag2());
+            everything.add(rob.getTimes());
+            everything.add(rob.getVelocities());
 
-            out.println("==================");
-            out.println("OI DUMP INFO");
-            out.println("==================");
+            everything.add(rob.isAutonomous());
+            everything.add(rob.isDisabled());
+            everything.add(rob.isEnabled());
+            everything.add(rob.isNewDataAvailable());
+            everything.add(rob.isNewDataAvailable());
+            everything.add(rob.isTest());
+            everything.add(oi.getIntakeOut());
+            everything.add(oi.getLeftStick());
+            everything.add(oi.getElevatorDown());
+            everything.add(oi.getElevatorUp());
+            everything.add(oi.getIntakeIn());
+            everything.add(oi.getRightStick());
+            everything.add(oi.getSlowDownButton());
+            everything.add(oi.getSteerAxis());
+            everything.add(oi.getThrottleAxis());
 
-
-            out.println("Intake out : "+oi.getIntakeOut());
-            out.println("Left Stick : "+oi.getLeftStick());
-            out.println("Elevator Down : "+oi.getElevatorDown());
-            out.println("Elevator Up : "+oi.getElevatorUp());
-            out.println("Intake in  : "+oi.getIntakeIn());
-            out.println("Right Stick : "+oi.getRightStick());
-            out.println("Slow Down Button : "+oi.getSlowDownButton());
-            out.println("Steer axis : "+oi.getSteerAxis());
-            out.println("Throttle axis : "+oi.getThrottleAxis());
-
-
-
-
+            //Log everything as one list
+            out.print(everything);
 
 
             out.close();
