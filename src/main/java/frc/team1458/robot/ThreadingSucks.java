@@ -47,43 +47,45 @@ public class ThreadingSucks {
 
         public void run() {
 
-            ArrayList everything = new ArrayList();
+
 
             //Yes i know this is ling but it really makes it readable code.
-            everything.add(rob.getIntakeEnabled());
-            everything.add(rob.getDrivetrainInverted());
-            everything.add(rob.getDt());
-            everything.add(rob.getElev1());
-            everything.add(rob.getElev2());
-            everything.add(rob.getElevatorEnabled());
-            everything.add(rob.getElevatorSpeed());
-            everything.add(rob.getGyro());
-            everything.add(rob.getIntake1());
-            everything.add(rob.getIntakeEnabled());
-            everything.add(rob.getDrivetrainInverted());
-            everything.add(rob.getMag1());
-            everything.add(rob.getMag2());
-            everything.add(rob.getTimes());
-            everything.add(rob.getVelocities());
 
-            everything.add(rob.isAutonomous());
-            everything.add(rob.isDisabled());
-            everything.add(rob.isEnabled());
-            everything.add(rob.isNewDataAvailable());
-            everything.add(rob.isNewDataAvailable());
-            everything.add(rob.isTest());
-            everything.add(oi.getIntakeOut());
-            everything.add(oi.getLeftStick());
-            everything.add(oi.getElevatorDown());
-            everything.add(oi.getElevatorUp());
-            everything.add(oi.getIntakeIn());
-            everything.add(oi.getRightStick());
-            everything.add(oi.getSlowDownButton());
-            everything.add(oi.getSteerAxis());
-            everything.add(oi.getThrottleAxis());
+            out.print("Get intake enabled, get drive train enabled, getDT, getelv1, getelv2, elevator enavled, elevator speed, gyro,intake1, intakeenabled, drivetraininverted,mag1, mag2, times, velocities, isautonomous, disabled, enabled, newdataavailable, newdataavailable, test, intakeout, leftstick, elevatordown, elevatorup, intakein, rightstick, slowdownbutton, steeraxis, throttleaxis");
+            out.println("");
+            out.print(rob.getIntakeEnabled()+",");
+            out.print(rob.getDrivetrainInverted()+",");
+            out.print(rob.getDt()+",");
+            out.print(rob.getElev1()+",");
+            out.print(rob.getElev2()+",");
+            out.print(rob.getElevatorEnabled()+",");
+            out.print(rob.getElevatorSpeed()+",");
+            out.print(rob.getGyro()+",");
+            out.print(rob.getIntake1()+",");
+            out.print(rob.getIntakeEnabled()+",");
+            out.print(rob.getDrivetrainInverted()+",");
+            out.print(rob.getMag1()+",");
+            out.print(rob.getMag2()+",");
+            out.print(rob.getTimes()+",");
+            out.print(rob.getVelocities()+",");
 
-            //Log everything as one list
-            out.print(everything);
+
+
+            out.print(rob.isAutonomous()+",");
+            out.print(rob.isDisabled()+",");
+            out.print(rob.isEnabled()+",");
+            out.print(rob.isNewDataAvailable()+",");
+            out.print(rob.isNewDataAvailable()+",");
+            out.print(rob.isTest()+",");
+            out.print(oi.getIntakeOut()+",");
+            out.print(oi.getLeftStick()+",");
+            out.print(oi.getElevatorDown()+",");
+            out.print(oi.getElevatorUp()+",");
+            out.print(oi.getIntakeIn()+",");
+            out.print(oi.getRightStick()+",");
+            out.print(oi.getSlowDownButton()+",");
+            out.print(oi.getSteerAxis()+",");
+            out.print(oi.getThrottleAxis()+",");
 
 
             out.close();
