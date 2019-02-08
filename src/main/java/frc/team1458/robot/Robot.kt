@@ -3,7 +3,6 @@ package frc.team1458.robot
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.sensor.*
 import frc.team1458.lib.sensor.interfaces.*
-import frc.team1458.lib.util.flow.delay
 import frc.team1458.lib.core.BaseRobot
 import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
@@ -11,8 +10,8 @@ import frc.team1458.lib.odom.EncoderOdom
 import frc.team1458.lib.drive.ClosedLoopTank
 import frc.team1458.lib.pathfinding.*
 import frc.team1458.lib.util.LiveDashboard
-import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.maths.TurtleMaths
+import java.io.PrintWriter
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -55,9 +54,22 @@ class Robot : BaseRobot() {
     var velocities: Array<Double> = arrayOf()
     var times: Array<Double> = arrayOf()
 
+    //smooth accelerating
+    var currInputValue: Double = 0.0
+    val threshhold = 0.03 //To Be Determined
+    //val velocityMap:(Long)-> Double = {x -> x * threshhold * 1000}
+    //var time_zero:Long = 0
+
+    //Thread logger
+    val filePath: String = "log.csv"
+    val logger: PrintWriter = PrintWriter(filePath)
+    var data:HashMap<String, Any> = HashMap<String, Any>()
+    val thread: ThreadingLogger = ThreadingLogger(logger, data)
+
+
     override fun robotSetup() {
         // println("Setup")
-        
+
         HelloWorld.main(null)
 
         // Don't zero later now
@@ -70,6 +82,26 @@ class Robot : BaseRobot() {
 
         LiveDashboard.setup(13.0, 13.0)
         LiveDashboard.endPath()
+
+        //smooth acceleration
+        currInputValue = oi.throttleAxis.value
+//        time_zero = System.currentTimeMillis()
+
+        //Thread logger
+        data.put("elevator speed ", elevatorSpeed)
+        data.put("velocities ", velocities)
+        data.put("times ", times)
+        data.put("oi.steerAxis ", oi.steerAxis)
+        data.put("oi.throttleAxis ", oi.throttleAxis)
+        data.put("oi.slowDownButton ", oi.slowDownButton)
+        data.put("oi.leftDown ", oi.leftStick.trigger)
+        data.put("oi.rightDown ", oi.rightStick.trigger)
+        data.put("oi.elevatorUp ", oi.elevatorUp.triggered)
+        data.put("oi.elevatorDown ", oi.elevatorDown.triggered)
+        data.put("oi.intakeIn ", oi.intakeIn.triggered)
+        data.put("oi.intakeOut ", oi.intakeOut.triggered)
+        thread.start()
+
     }
 
     override fun runAuto() {
@@ -123,6 +155,8 @@ class Robot : BaseRobot() {
         val auto = Auto(this, dt, odom, gyro, automaticSpeedControl = false, putToDashboard = true) // v
 
         auto.startBasicPurePursuit(pathNoCurvature, 3.0)
+
+
     }
     override fun teleopInit() {
         // likely nothing here
@@ -186,6 +220,20 @@ class Robot : BaseRobot() {
                 }
             }
         }
+
+        //smooth linear accelerating
+
+        var dV = oi.throttleAxis.value - currInputValue
+        if(dV > threshhold){
+            currInputValue += threshhold
+        }else{
+            currInputValue = oi.throttleAxis.value
+        }
+
+        dt.setDriveVelocity(currInputValue, currInputValue)
+
+
+
     }
 
     override fun runTest() {
@@ -227,7 +275,6 @@ class Robot : BaseRobot() {
         val vTimed = PathUtils.consistentTime(t, vz, 0.02)
 
 
-
     }
 
     override fun robotDisabled() {
@@ -238,3 +285,4 @@ class Robot : BaseRobot() {
         // LiveDashboard.putOdom(odom.pose)
     }
 }
+
