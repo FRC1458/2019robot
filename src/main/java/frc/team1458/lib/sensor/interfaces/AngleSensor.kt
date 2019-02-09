@@ -17,7 +17,6 @@ interface AngleSensor : Zeroable {
      * Angle in degrees
      */
     val angle : Double
-        get
 
     // Superior unit
     val radians : Double
@@ -27,7 +26,6 @@ interface AngleSensor : Zeroable {
      * Angular velocity in degrees per second
      */
     val rate : Double
-        get
 
     /**
      * Heading in degrees in the interval [0, 360)
@@ -41,9 +39,6 @@ interface AngleSensor : Zeroable {
         fun create(angle: () -> Double, rate: () -> Double): AngleSensor {
             return object : AngleSensor {
                 var _zero = 0.0
-                    set(value) {
-                        field = value
-                    }
 
                 override val angle: Double
                     get() {
@@ -90,7 +85,7 @@ interface AngleSensor : Zeroable {
 
         fun encoder(portA: Int, portB: Int = portA + 1, ratio: Double = 1.0, reverse: Boolean = false): AngleSensor {
             var enc = Encoder(portA, portB, reverse)
-            enc.setDistancePerPulse(ratio)
+            enc.distancePerPulse = ratio
             return create(enc::getDistance, enc::getRate)
         }
 

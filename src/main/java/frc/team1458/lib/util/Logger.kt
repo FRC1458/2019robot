@@ -86,9 +86,9 @@ object Logger {
 
                 var line = ""
                 when (format) {
-                    Format.HUMANREADABLE -> line = "[${formatter.format(Date(timestamp.toLong()))}] [${severity.toString()}] $tag: $message\n"
-                    Format.JSON -> line = "{timestamp: ${timestamp.toLong()}, severity: \"${severity.toString()}\", tag: \"${tag.replace("\"", "\\\"")}\", message:\"${message.replace("\"", "\\\"")}\"},"
-                    Format.CSV -> line = "${timestamp.toLong()},${severity.toString()},${tag.replace(",", "\\,")},${message.replace(",", "\\,")}\n"
+                    Format.HUMANREADABLE -> line = "[${formatter.format(Date(timestamp.toLong()))}] [$severity] $tag: $message\n"
+                    Format.JSON -> line = "{timestamp: ${timestamp.toLong()}, severity: \"$severity\", tag: \"${tag.replace("\"", "\\\"")}\", message:\"${message.replace("\"", "\\\"")}\"},"
+                    Format.CSV -> line = "${timestamp.toLong()},$severity,${tag.replace(",", "\\,")},${message.replace(",", "\\,")}\n"
                 }
 
                 if(color && format == Format.HUMANREADABLE) {
@@ -117,9 +117,9 @@ object Logger {
 
                 var line = ""
                 when(format) {
-                    Format.HUMANREADABLE -> line = "[${formatter.format(Date(timestamp.toLong()))}] [${severity.toString()}] $tag: $message\n"
-                    Format.JSON -> line = "{timestamp: ${timestamp.toLong()}, severity: \"${severity.toString()}\", tag: \"${tag.replace("\"", "\\\"")}\", message:\"${message.replace("\"", "\\\"")}\"},"
-                    Format.CSV -> line = "${timestamp.toLong()},${severity.toString()},${tag.replace(",", "\\,")},${message.replace(",", "\\,")}\n"
+                    Format.HUMANREADABLE -> line = "[${formatter.format(Date(timestamp.toLong()))}] [$severity] $tag: $message\n"
+                    Format.JSON -> line = "{timestamp: ${timestamp.toLong()}, severity: \"$severity\", tag: \"${tag.replace("\"", "\\\"")}\", message:\"${message.replace("\"", "\\\"")}\"},"
+                    Format.CSV -> line = "${timestamp.toLong()},$severity,${tag.replace(",", "\\,")},${message.replace(",", "\\,")}\n"
                 }
 
                 if(color && format == Format.HUMANREADABLE) {

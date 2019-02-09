@@ -5,10 +5,8 @@ import frc.team1458.lib.input.interfaces.Switch
 
 interface Solenoid {
     val state : State
-        get
 
     val position : Position
-        get
 
     fun extend()
     fun retract()
@@ -31,9 +29,6 @@ interface Solenoid {
                 other.retract()
             }
 
-            override fun plus(other: Solenoid): Solenoid {
-                return super.plus(other)
-            }
         }
     }
 

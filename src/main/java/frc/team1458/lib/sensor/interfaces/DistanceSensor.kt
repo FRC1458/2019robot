@@ -13,7 +13,6 @@ interface DistanceSensor : Zeroable {
         get() = create({ -distanceMeters }, { -velocity })
 
     val distanceMeters : Double
-        get
 
     val distanceCentimeters : Double
         get() = distanceMeters * 100

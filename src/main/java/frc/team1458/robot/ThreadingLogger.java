@@ -117,9 +117,13 @@ public class ThreadingLogger extends Thread{
                     logger.close();
                     return;
                 }
-                //data present
-                logger.println("log, " + ++count);
-                logger.println("Time, " + System.currentTimeMillis());
+                //Log top header of the rows
+
+                logger.print("\"Log\", \"Time\"");
+
+                //Log bottom (body) of the rows
+                logger.println(count+", ");
+                logger.print(System.currentTimeMillis());
                 for (String key : data.keySet()) {
                     logger.println(key + data.get(key).toString());
                 }

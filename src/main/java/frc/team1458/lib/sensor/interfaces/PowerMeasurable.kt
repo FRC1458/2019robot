@@ -5,7 +5,6 @@ interface PowerMeasurable {
      * Current draw of this device, in Amps
      */
     val currentDraw : Double
-        get
 
     companion object {
         fun create(current: () -> Double) : PowerMeasurable {

@@ -6,7 +6,6 @@ import java.util.*
 
 interface Switch : DigitalInput {
     val triggered : Boolean
-        get
 
     override val value : Int
         get() = if(triggered) { 1 } else { 0 }

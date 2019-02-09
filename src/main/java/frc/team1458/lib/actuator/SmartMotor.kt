@@ -10,40 +10,28 @@ import frc.team1458.lib.sensor.interfaces.PowerMeasurable
 interface SmartMotor : Motor, PowerMeasurable {
 
     val CANid : Int
-        get
 
     val outputVoltage : Double
-        get
 
     //var currentLimit : Double
     //    set
 
     val connectedEncoder : AngleSensor
-        get
 
     val isEncoderWorking : Boolean
-        get
 
     /**
      * Temperature of the motor controller in degrees Celsius
      */
     val temperature : Double
-        get
 
     var PIDconstants : PIDConstants
-        set
-        get
 
     var PIDsetpoint : Double
-        set
-        get
 
     var brakeMode : BrakeMode
-        set
-        get
 
     override val inverted: SmartMotor
-        get
 
     val _talonInstance : IMotorController?
 
@@ -117,7 +105,6 @@ interface SmartMotor : Motor, PowerMeasurable {
                     get() = talon.temperature
 
                 override var PIDconstants: PIDConstants = PIDConstants(0.0)
-                    get
                     set(value) {
                         field = value
                         talon.config_kP(0, value.kP, timeoutMs)
@@ -126,7 +113,6 @@ interface SmartMotor : Motor, PowerMeasurable {
                         talon.config_kF(0, value.kF * 1023.0, timeoutMs)
                     }
                 override var PIDsetpoint: Double = 0.0
-                    get
                     set(value) {
                         //System.out.println("PIDsetpoint = " + value)
 
@@ -139,7 +125,6 @@ interface SmartMotor : Motor, PowerMeasurable {
                     }
 
                 override var brakeMode: BrakeMode = BrakeMode.BRAKE
-                    get
                     set(value) {
                         field = value
                         talon.setNeutralMode(when(field) {
