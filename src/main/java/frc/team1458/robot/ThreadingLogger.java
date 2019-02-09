@@ -113,13 +113,13 @@ public class ThreadingLogger extends Thread{
                 try {
                     this.wait(200);
                 } catch (InterruptedException e) {
-                    logger.println("InterruptedException " + e.getMessage());
+                    logger.println("InterruptedException, " + e.getMessage());
                     logger.close();
                     return;
                 }
                 //data present
-                logger.println("log " + ++count);
-                logger.println("Time " + System.currentTimeMillis());
+                logger.println("log, " + ++count);
+                logger.println("Time, " + System.currentTimeMillis());
                 for (String key : data.keySet()) {
                     logger.println(key + data.get(key).toString());
                 }
