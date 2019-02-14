@@ -72,7 +72,8 @@ dependencies {
     compile group: 'org.ejml', name: 'ejml-all', version: '0.37.1'
     // http://koma.kyonifer.com
     compile group: "com.kyonifer", name:"koma-core-ejml", version: "0.12"
-
+    // http://fazecast.github.io/jSerialComm/
+    compile 'com.fazecast:jSerialComm:[2.0.0,3.0.0)'
 }
 
 jar {

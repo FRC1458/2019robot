@@ -1,5 +1,8 @@
 package frc.team1458.lib.util.maths
 
+import frc.team1458.lib.odom.Pose2D
+import kotlin.math.abs
+
 /**
  * Math utility classes
  */
@@ -27,6 +30,20 @@ object TurtleMaths {
             value < min -> min
             else -> value
         }
+    }
+
+    fun closestVal(array: List<Pair<Double, Pose2D>>, value: Double): Pair<Double, Pose2D> {
+        var distance = Math.abs(array[0].first - value)
+        var idx = 0
+        for (c in 1 until array.size) { // TODO check for out of bounds here!
+            val cdistance = Math.abs(array[c].first - value)
+
+            if (cdistance < distance) {
+                idx = c
+                distance = cdistance
+            }
+        }
+        return array[idx]
     }
 
     fun deadband(value: Double, deadband: Double = 0.15): Double {

@@ -40,7 +40,7 @@ class Robot : BaseRobot() {
     val intake2 = SmartMotor.CANtalonSRX(19)
 
     // Elevator stuff
-    val elevatorEnabled: Boolean = true
+    val elevatorEnabled: Boolean = false
     val mag1 = Switch.fromDIO(8).inverted
     val mag2 = Switch.fromDIO(9).inverted
     val elev1 = SmartMotor.CANtalonSRX(20).inverted
@@ -49,7 +49,7 @@ class Robot : BaseRobot() {
 
     // Autonomous stuff
     val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
-    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro)
+    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro, latencyCompensation = true)
 
     var velocities: Array<Double> = arrayOf()
     var times: Array<Double> = arrayOf()
@@ -61,20 +61,22 @@ class Robot : BaseRobot() {
     //var time_zero:Long = 0
 
     //Thread logger
-    val filePath: String = "log.csv"
-    val logger: PrintWriter = PrintWriter(filePath)
-    var data:HashMap<String, Any> = HashMap<String, Any>()
-    val thread: ThreadingLogger = ThreadingLogger(logger, data)
+    // val filePath: String = "log.csv"
+    // val logger: PrintWriter = PrintWriter(filePath)
+    // var data:HashMap<String, Any> = HashMap<String, Any>()
+    // val thread: ThreadingLogger = ThreadingLogger(logger, data)
+
+    var previousJoystick = oi.throttleAxis.value
+
 
 
     override fun robotSetup() {
         // println("Setup")
 
-        HelloWorld.main(null)
-
         // Don't zero later now
         dt.leftMaster.connectedEncoder.zero()
         dt.rightMaster.connectedEncoder.zero()
+
         gyro.zero()
 
         odom.setup()
@@ -84,10 +86,11 @@ class Robot : BaseRobot() {
         LiveDashboard.endPath()
 
         //smooth acceleration
-        currInputValue = oi.throttleAxis.value
+        // currInputValue = oi.throttleAxis.value
 //        time_zero = System.currentTimeMillis()
 
         //Thread logger
+        /*
         data.put("elevator speed, ", elevatorSpeed)
         data.put("velocities, ", velocities)
         data.put("times ", times)
@@ -101,6 +104,7 @@ class Robot : BaseRobot() {
         data.put("oi.intakeIn, ", oi.intakeIn.triggered)
         data.put("oi.intakeOut, ", oi.intakeOut.triggered)
         thread.start()
+        */
 
     }
 
@@ -152,7 +156,7 @@ class Robot : BaseRobot() {
 
         val vTimed = PathUtils.consistentTime(t, vz, 0.02)
 
-        val auto = Auto(this, dt, odom, gyro, automaticSpeedControl = false, putToDashboard = true) // v
+        val auto = Auto(this, dt, odom, gyro, automaticSpeedControl = false, putToDashboard = true, velocities = v, distances = x) // v
 
         auto.startBasicPurePursuit(pathNoCurvature, 3.0)
 
@@ -169,6 +173,8 @@ class Robot : BaseRobot() {
         // SmartDashboard.putNumber("GyroAngle", gyro.heading)
         // println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
         // drive code - runs around 50hz
+        println("big bork 1")
+        /*
         dt.arcadeDrive(
             when {
                 drivetrainInverted -> -0.5 * (oi.throttleAxis.value)
@@ -182,7 +188,34 @@ class Robot : BaseRobot() {
                 oi.steerAxis.value
             }
         )
+        */
 
+        var steerInput = oi.throttleAxis.value
+        if (steerInput - previousJoystick > 0.2){
+            steerInput = TurtleMaths.constrain(steerInput + 0.005, -1.0, 1.0)
+        }
+        else if (steerInput - previousJoystick < -0.2)
+        {
+            steerInput = TurtleMaths.constrain(steerInput - 0.005, -1.0, 1.0)
+        }
+
+        dt.arcadeDrive(
+            when {
+                drivetrainInverted -> -0.5 * (oi.throttleAxis.value)
+                oi.slowDownButton.triggered -> 0.5 * oi.throttleAxis.value
+
+                else -> oi.throttleAxis.value
+            },
+            if (drivetrainInverted) {
+                (oi.steerAxis.value)
+            } else {
+                steerInput
+            }
+        )
+
+        previousJoystick = oi.throttleAxis.value
+
+        println("big Bork 2")
         // Elevator control code
         if (elevatorEnabled) {
             if (oi.elevatorUp.triggered && !mag1.triggered) {
@@ -222,7 +255,7 @@ class Robot : BaseRobot() {
         }
 
         //smooth linear accelerating
-
+        /*
         var dV = oi.throttleAxis.value - currInputValue
         if(dV > threshhold){
             currInputValue += threshhold
@@ -231,9 +264,9 @@ class Robot : BaseRobot() {
         }
 
         dt.setDriveVelocity(currInputValue, currInputValue)
+        */
 
-
-
+        println("no")
     }
 
     override fun runTest() {
@@ -247,7 +280,7 @@ class Robot : BaseRobot() {
         }
         */
 
-
+        /*
         val MAX_LINVEL = 5.0
         val MAX_LINACCEL = 3.5
         val MAX_CENTRIPITAL = 3.5
@@ -273,12 +306,17 @@ class Robot : BaseRobot() {
         }
 
         val vTimed = PathUtils.consistentTime(t, vz, 0.02)
+        */
 
+        val auto = Auto(this, dt, odom, gyro, putToDashboard = true)
+
+        auto.followVisionLine()
 
     }
 
     override fun robotDisabled() {
-        // LiveDashboard.putOdom(odom.pose)
+        dt.setDriveVelocity(0.0, 0.0)
+        println("dis")
     }
 
     override fun disabledPeriodic() {

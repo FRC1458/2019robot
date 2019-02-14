@@ -3,49 +3,18 @@ package frc.team1458.robot
 import com.kauailabs.navx.frc.AHRS
 import edu.wpi.first.wpilibj.I2C
 import edu.wpi.first.wpilibj.SampleRobot
+import com.fazecast.jSerialComm.*
 import edu.wpi.first.wpilibj.Timer
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.drive.ClosedLoopTank
 import frc.team1458.lib.pid.PIDConstants
+import frc.team1458.lib.sensor.LineSensor
+import frc.team1458.lib.sensor.SerialCommunication
+import frc.team1458.lib.util.flow.delay
 import java.io.FileWriter
 import java.io.IOException
 
 class TestRobot : SampleRobot() {
-
-    val dt: ClosedLoopTank = ClosedLoopTank(
-        leftMaster = SmartMotor.CANtalonSRX(16),
-        rightMaster = SmartMotor.CANtalonSRX(22).inverted,
-        leftMotors = arrayOf(SmartMotor.CANtalonSRX(25)),
-        rightMotors = arrayOf(SmartMotor.CANtalonSRX(23).inverted),
-        closedLoopControl = false,
-        wheelDiameter = 0.5,
-        closedLoopScaling = 6.0, // TODO: determine
-
-        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors: maybe 0.0 for I
-        pidConstantsLeft = PIDConstants(0.6, kI = 0.001/*3*/, kD = 0.00, kF = 1.0 / 1798.8), // These are decent
-        pidConstantsRight = PIDConstants(0.750, kI = 0.001/*5*/, kD = 0.05, kF = 1.0 / 1806.4)// These are decent2
-    )
-
-    /* Talon Controllers
-    val leftOne: TalonSRX = TalonSRX(16)
-    val leftTwo: TalonSRX = TalonSRX(25)
-
-    val rightOne: TalonSRX = TalonSRX(22)
-    val rightTwo: TalonSRX = TalonSRX(23)
-
-    val talonArrayLeft = arrayOf(leftOne, leftTwo)
-    val talonArrayRight = arrayOf(rightOne, rightTwo)
-    */
-
-    // Testing Stuff
-    val navx: AHRS = AHRS(I2C.Port.kMXP)
-
-    val velocityTimeData: ArrayList<Array<Double>> = ArrayList<Array<Double>>()
-    var timestamp: Double = 0.0
-    var velocity: Double = 0.0
-    var startTime: Double = Timer.getFPGATimestamp() * 1000.0
-    val runMs: Double = 5000.0
-
 
     override fun robotInit() {
 
@@ -65,6 +34,19 @@ class TestRobot : SampleRobot() {
     override fun operatorControl() {}
 
     override fun test() {
+        System.setProperty("os.arch_full", "armv7")
+
+        val comm = SerialCommunication(this)
+        comm.startThread()
+
+        while (true) {
+            delay(1)
+        }
+
+        comm.endThread()
+
+
+        /*
         var tmpVelocity = 0.0
         var updateCounter = 0
         var currentTime = 0.0
@@ -115,6 +97,7 @@ class TestRobot : SampleRobot() {
 
             // println("HZ: ${1.0 / ((Timer.getFPGATimestamp()) - (tStart / 1000.0))}")
         }
+        */
 
         /*for (talon in talonArrayLeft) {
             talon.enableVoltageCompensation(true)
@@ -126,6 +109,7 @@ class TestRobot : SampleRobot() {
             talon.set(ControlMode.PercentOutput, 0.0)
         }*/
 
+        /*
         dt.setDriveVelocity(0.0, 0.0)
 
         var fileWriter: FileWriter? = null
@@ -158,6 +142,7 @@ class TestRobot : SampleRobot() {
             println("Flushing/closing error!")
             e.printStackTrace()
         }
+        */
     }
 
     override fun disabled() {}

@@ -4,6 +4,8 @@ import frc.team1458.lib.util.maths.TurtleMaths
 import frc.team1458.lib.drive.ClosedLoopTank
 import frc.team1458.lib.odom.EncoderOdom
 import frc.team1458.lib.pathfinding.PurePursuitFollower
+import frc.team1458.lib.pid.PID
+import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.delay
@@ -18,7 +20,8 @@ class Auto(
     private val automaticSpeedControl: Boolean = false, // TODO Implement
     private val putToDashboard: Boolean = false,
     clearSensorsOnInit: Boolean = true,
-    private val velocities: Array<Double> = arrayOf()
+    private val velocities: Array<Double> = arrayOf(),
+    private val distances: Array<Double> = arrayOf()
 
 ) {
     private val absoluteMaximumVelocity = 8.00 // feet/second - Absolute maximum velocity the robot can spin the wheels
@@ -51,7 +54,6 @@ class Auto(
             resetAutonomousSensors()
         }
 
-        println("Before while")
         while (robot.isAutonomous && robot.isEnabled && !purePursuitFollower.finished(
                 Pair(odometry.pose.x, odometry.pose.y))
         ) {
@@ -61,12 +63,26 @@ class Auto(
                 LiveDashboard.putOdom(odometry.pose)
             }
 
-            var index = purePursuitFollower.getClosestPathPoint(Pair(odometry.pose.x, odometry.pose.y))
+            //get lookahead index
+            var purePursuitIndex = purePursuitFollower.getClosestPathIndex(Pair(odometry.pose.x, odometry.pose.y))
+            println("pure pursuit index: $purePursuitIndex")
+
+            //use index of point to get the total distance to that point
+            var robotDistance = purePursuitFollower.cumulativePathLengthArray()[purePursuitIndex]
+            println("PP Distance: $robotDistance")
+
+            //find index of nearest distance to robot in the x (distances) array
+            var index = purePursuitFollower.getClosestPathIndexFromDist(distances.toDoubleArray(), robotDistance)
+            println("index: $index")
+
+            //find v at that index
+            //var velocity = velocities[index]
 
 
 
             driveVelocity =
-                purePursuitFollower.getControl(Pair(odometry.pose.x, odometry.pose.y), odometry.pose.theta, setVelocity, putToDashboard)
+                purePursuitFollower.getControl(Pair(odometry.pose.x, odometry.pose.y), odometry.pose.theta, velocities[index], putToDashboard)
+
 
             driveVelocity = Pair(TurtleMaths.constrain(driveVelocity.first, -1.0 * absoluteMaximumVelocity, absoluteMaximumVelocity),
                 TurtleMaths.constrain(driveVelocity.second, -1.0 * absoluteMaximumVelocity, absoluteMaximumVelocity))
@@ -74,7 +90,6 @@ class Auto(
             drivetrain.setDriveVelocity(driveVelocity.first, driveVelocity.second)
 
             delay(5) // TODO Maybe try maximum throughput so disable?
-            println("Ran once")
         }
 
         // TODO Make sure ramp down velocity works / needs tweaks
@@ -84,6 +99,7 @@ class Auto(
             val endTime = systemTimeSeconds + rampDownTime
 
             while (endTime >= systemTimeSeconds) {
+                println("Modulating Speed...")
                 timeLeft = endTime - systemTimeSeconds
                 scalingFactor = (timeLeft / rampDownTime)
 
@@ -92,12 +108,35 @@ class Auto(
                     break
                 }
 
+                println(driveVelocity.first * scalingFactor)
+                println(driveVelocity.second * scalingFactor)
+
                 drivetrain.setDriveVelocity(driveVelocity.first * scalingFactor, driveVelocity.second * scalingFactor)
             }
         }
 
         drivetrain.setDriveVelocity(0.0, 0.0)
     }
+
+    fun followVisionLine(seconds: Double = 20.0, speed: Double = 6.0) {
+        val startTime = systemTimeSeconds
+
+        val k1 = 1.3
+        val k2 = 0.4
+
+        while ((startTime + seconds) > (systemTimeSeconds)) {
+            val offset = LiveDashboard.getOffset()
+            val angle = LiveDashboard.getAngle()
+            val steer = k1 * offset + k2 * angle
+
+            // println(" $offset - $angle")
+            drivetrain.setDriveVelocity(speed + steer, speed - steer)
+
+        }
+
+        drivetrain.setDriveVelocity(0.0, 0.0)
+    }
+
 
     private fun resetAutonomousSensors(zeroEncoders: Boolean = true,
                                zeroGyroscope: Boolean = true,
