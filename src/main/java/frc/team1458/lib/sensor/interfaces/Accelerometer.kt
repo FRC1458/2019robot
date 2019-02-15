@@ -9,19 +9,16 @@ interface Accelerometer {
      * Acceleration on x-axis in m/s^2
      */
     val x : Double
-        get
 
     /**
      * Acceleration on y-axis in m/s^2
      */
     val y : Double
-        get
 
     /**
      * Acceleration on z-axis in m/s^2
      */
     val z : Double
-        get
 
     companion object {
         fun create(xSource: () -> Double, ySource: () -> Double, zSource: () -> Double) : frc.team1458.lib.sensor.interfaces.Accelerometer {

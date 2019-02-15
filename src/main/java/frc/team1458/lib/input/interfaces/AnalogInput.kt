@@ -7,7 +7,6 @@ interface AnalogInput {
      * Value in the closed interval [-1.0, 1.0]
      */
     val value : Double
-        get
 
     val inverted : AnalogInput
         get() = create { value * -1.0 }

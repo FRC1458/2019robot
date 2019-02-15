@@ -2,8 +2,6 @@ package frc.team1458.lib.actuator
 
 interface Motor {
     var speed : Double
-        set
-        get
 
     fun stop() {
         speed = 0.0

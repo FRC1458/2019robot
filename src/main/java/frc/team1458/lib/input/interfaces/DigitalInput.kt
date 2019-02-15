@@ -6,7 +6,6 @@ import frc.team1458.lib.util.maths.TurtleMaths
 
 interface DigitalInput {
     val value : Int
-        get
 
     companion object {
         fun create(func: () -> Int) : DigitalInput {

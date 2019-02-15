@@ -2,7 +2,6 @@ package frc.team1458.lib.input.interfaces
 
 interface POV {
     val direction : Direction
-        get
 
     enum class Direction constructor(val angle: Int?) {
         CENTER(null), NORTH(0), NORTHEAST(45), EAST(90), SOUTHEAST(135), SOUTH(180), SOUTHWEST(225), WEST(270), NORTHWEST(315);

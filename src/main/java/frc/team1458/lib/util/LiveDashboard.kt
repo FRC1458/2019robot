@@ -15,6 +15,9 @@ object LiveDashboard {
     var _pathY : NetworkTableEntry? = null
     var _pathHeading : NetworkTableEntry? = null
 
+    var visionOffset: NetworkTableEntry? = null
+    var visionAngle: NetworkTableEntry? = null
+
     var _offsetX: Double = 0.0
     var _offsetY: Double = 0.0
 
@@ -31,6 +34,10 @@ object LiveDashboard {
 
         _offsetX = offsetX
         _offsetY = offsetY
+
+        visionOffset = table.getEntry("horiz")
+        visionAngle = table.getEntry("angle")
+
 
         endPath()
         putOdom(0.0, 0.0, 0.0)
@@ -55,6 +62,14 @@ object LiveDashboard {
 
     fun endPath() {
         _followingPath!!.setBoolean(false)
+    }
+
+    fun getOffset(): Double {
+        return visionOffset!!.getDouble(0.0)
+    }
+
+    fun getAngle(): Double {
+        return visionAngle!!.getDouble(0.0)
     }
 
 }
