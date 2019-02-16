@@ -118,16 +118,16 @@ class Auto(
         drivetrain.setDriveVelocity(0.0, 0.0)
     }
 
-    fun followVisionLine(seconds: Double = 20.0, speed: Double = 6.0) {
+    fun followVisionLine(seconds: Double = 20.0, speed: Double = 3.0) {
         val startTime = systemTimeSeconds
 
-        val k1 = 1.3
-        val k2 = 0.4
+        val k1 = 1.3 // Proportional value of offset
+        val k2 = 0.4 // Proportional value of angle
 
         while ((startTime + seconds) > (systemTimeSeconds)) {
             val offset = LiveDashboard.getOffset()
             val angle = LiveDashboard.getAngle()
-            val steer = k1 * offset + k2 * angle
+            val steer = (k1 * offset) + (k2 * angle)
 
             // println(" $offset - $angle")
             drivetrain.setDriveVelocity(speed + steer, speed - steer)
