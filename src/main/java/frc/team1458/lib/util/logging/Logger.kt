@@ -1,8 +1,7 @@
-package frc.team1458.lib.util
+package frc.team1458.lib.util.logging
 
 import frc.team1458.lib.util.flow.systemTimeMillis
 import java.io.BufferedWriter
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -10,43 +9,51 @@ object Logger {
     private val destinations : ArrayList<Destination> = ArrayList()
 
     fun verbose(tag: String, message: String) {
-        Logger.println(Severity.VERBOSE, tag, message)
+        println(
+            Logger.Severity.VERBOSE,
+            tag,
+            message
+        )
     }
 
     fun v(tag: String, message: String) {
-        Logger.println(Severity.VERBOSE, tag, message)
+        println(
+            Logger.Severity.VERBOSE,
+            tag,
+            message
+        )
     }
 
     fun info(tag: String, message: String) {
-        Logger.println(Severity.INFO, tag, message)
+        println(Logger.Severity.INFO, tag, message)
     }
 
     fun i(tag: String, message: String) {
-        Logger.println(Severity.INFO, tag, message)
+        println(Logger.Severity.INFO, tag, message)
     }
 
     fun debug(tag: String, message: String) {
-        Logger.println(Severity.DEBUG, tag, message)
+        println(Logger.Severity.DEBUG, tag, message)
     }
 
     fun d(tag: String, message: String) {
-        Logger.println(Severity.DEBUG, tag, message)
+        println(Logger.Severity.DEBUG, tag, message)
     }
 
     fun warn(tag: String, message: String) {
-        Logger.println(Severity.WARN, tag, message)
+        println(Logger.Severity.WARN, tag, message)
     }
 
     fun w(tag: String, message: String) {
-        Logger.println(Severity.WARN, tag, message)
+        println(Logger.Severity.WARN, tag, message)
     }
 
     fun error(tag: String, message: String) {
-        Logger.println(Severity.ERROR, tag, message)
+        println(Logger.Severity.ERROR, tag, message)
     }
 
     fun e(tag: String, message: String) {
-        Logger.println(Severity.ERROR, tag, message)
+        println(Logger.Severity.ERROR, tag, message)
     }
 
     fun println(severity: Severity, tag: String, message: String) {
@@ -74,7 +81,7 @@ object Logger {
 
             private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
-            constructor(filePath: String, format: Format, minSeverity: Severity = Severity.VERBOSE, color: Boolean) {
+            constructor(filePath: String, format: Format, minSeverity: Severity = Logger.Severity.VERBOSE, color: Boolean) {
                 this.format = format
                 this.logFile = java.io.File(filePath).bufferedWriter()
                 this.minSeverity = minSeverity
@@ -106,7 +113,7 @@ object Logger {
 
             private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
-            constructor(format: Format, minSeverity: Severity = Severity.VERBOSE, color: Boolean) {
+            constructor(format: Format, minSeverity: Severity = Logger.Severity.VERBOSE, color: Boolean) {
                 this.format = format
                 this.minSeverity = minSeverity
                 this.color = color

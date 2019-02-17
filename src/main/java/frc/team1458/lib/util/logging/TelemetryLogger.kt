@@ -1,4 +1,4 @@
-package frc.team1458.lib.util
+package frc.team1458.lib.util.logging
 
 import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.maths.format
@@ -56,16 +56,21 @@ object TelemetryLogger {
         currentIterationData[key] = value
     }
 
-    fun putValue(key: String, value: Double) = putValue(key, value.format(2))
-    fun putValue(key: String, value: Int) = putValue(key, value.toString())
-    fun putValue(key: String, value: Float) = putValue(key, value.format(2))
-    fun putValue(key: String, value: Long) = putValue(key, value.toString())
-    fun putValue(key: String, value: Boolean) = putValue(key, value.toString())
+    fun putValue(key: String, value: Double) =
+        putValue(key, value.format(2))
+    fun putValue(key: String, value: Int) =
+        putValue(key, value.toString())
+    fun putValue(key: String, value: Float) =
+        putValue(key, value.format(2))
+    fun putValue(key: String, value: Long) =
+        putValue(key, value.toString())
+    fun putValue(key: String, value: Boolean) =
+        putValue(key, value.toString())
 
     fun endIteration() {
         try {
             if(iteration % 5 == 0) {
-                var line = logKeys?.map { key -> currentIterationData[key] }?.
+                val line = logKeys?.map { key -> currentIterationData[key] }?.
                         reduce { acc, value -> "$acc,$value" } + "\n"
                 // data += line
 

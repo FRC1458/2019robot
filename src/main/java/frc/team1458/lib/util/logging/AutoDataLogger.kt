@@ -1,11 +1,11 @@
-package frc.team1458.lib.util
+package frc.team1458.lib.util.logging
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.util.maths.TurtleMaths
 import frc.team1458.lib.util.maths.format
 import java.util.*
 
-object DataLogger {
+object AutoDataLogger {
     private val data: MutableMap<String, MutableList<Pair<Double, Double>>> = HashMap()
     private val timestamps: MutableSet<Double> = HashSet()
 
@@ -13,8 +13,6 @@ object DataLogger {
         get() = data.keys
 
     private val currentIterationPlaced: MutableSet<String> = HashSet()
-
-    var useSmartDashboard = true
 
     var currentIterationTimestamp: Double = 0.0
         set(value) {
@@ -34,10 +32,7 @@ object DataLogger {
         if(currentIterationPlaced.add(key)) {
             data[key]!!.add(Pair(timestamp, value))
             timestamps.add(timestamp)
-
-            if(useSmartDashboard) {
-                SmartDashboard.putNumber(key, value)
-            }
+            SmartDashboard.putNumber(key, value)
         } else {
             Logger.w("DataLogger", "Multiple logs for same key $key in single iteration")
         }
@@ -46,7 +41,10 @@ object DataLogger {
     fun endTeleop() {
         for(key in data.keys) {
             if(!currentIterationPlaced.contains(key)) {
-                Logger.w("DataLogger", "No logs for key $key in single iteration. Adding previous value")
+                Logger.w(
+                    "DataLogger",
+                    "No logs for key $key in single iteration. Adding previous value"
+                )
                 data[key]!!.add(Pair(currentIterationTimestamp, data[key]!!.last().second))
             }
         }
@@ -57,11 +55,23 @@ object DataLogger {
     fun putValue(key: String, value: Long, timestamp: Double) = putValue(key, value.toDouble(), timestamp)
     fun putValue(key: String, value: Boolean, timestamp: Double) = putValue(key, if(value) { 1.0 } else { 0.0 }, timestamp)*/
 
-    fun putValue(key: String, value: Double) = putValue(key, value, currentIterationTimestamp)
+    fun putValue(key: String, value: Double) = putValue(
+        key,
+        value,
+        currentIterationTimestamp
+    )
     fun putValue(key: String, value: Int) = putValue(key, value.toDouble())
-    fun putValue(key: String, value: Float) = putValue(key, value.toDouble())
-    fun putValue(key: String, value: Long) = putValue(key, value.toDouble())
-    fun putValue(key: String, value: Boolean) = putValue(key, if(value) { 1.0 } else { 0.0 })
+    fun putValue(key: String, value: Float) =
+        putValue(key, value.toDouble())
+    fun putValue(key: String, value: Long) =
+        putValue(key, value.toDouble())
+    fun putValue(key: String, value: Boolean) = putValue(
+        key, if (value) {
+            1.0
+        } else {
+            0.0
+        }
+    )
 
     /**
      * @return a List of Pairs of (timestamp, value)
@@ -100,26 +110,30 @@ object DataLogger {
     fun getAllStats(key: String): String? {
         val data = getData(key)
         return if (data == null) { null } else {
-            "min/avg/max/stddev = ${getMin(key)?.format(3)}/${getAverage(key)?.format(3)}/" +
-                    "${getMax(key)?.format(3)}/${getStdDev(key)?.format(3)}"
+            "min/avg/max/stddev = ${getMin(key)?.format(3)}/${getAverage(
+                key
+            )?.format(3)}/" +
+                    "${getMax(key)?.format(3)}/${getStdDev(
+                        key
+                    )?.format(3)}"
         }
     }
 
     fun getCSV(keys: Array<String>): String? {
-        var str: String = ""
+        var str = ""
 
         // Header
         str += "timestamp,"
-        for(key in keys.sortedArray()) {
+        for(key in keys) {
             str += key.replace(" ", "_").toLowerCase() + ","
         }
         str = str.removeSuffix(",") + "\n"
 
         // Data
-        for(timestamp in timestamps.sorted()) {
+        for(timestamp in timestamps) {
             str += "${timestamp.toLong()},"
-            keys.forEach {
-                val d = data[it]!!
+            for(key in keys) {
+                val d = data[key]!!
                 str += d[d.indexOfFirst { it.first == timestamp }].second.format(3) + ","
             }
             str = str.removeSuffix(",") + "\n"

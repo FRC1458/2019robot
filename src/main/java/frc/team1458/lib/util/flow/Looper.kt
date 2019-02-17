@@ -1,12 +1,9 @@
 package frc.team1458.lib.util.flow
 
-import edu.wpi.first.wpilibj.Timer
-import kotlinx.coroutines.*
-import frc.team1458.lib.util.Logger
-import java.util.concurrent.TimeUnit
+import frc.team1458.lib.util.logging.Logger
 
 
-suspend fun periodic(hz: Int = 20, condition: () -> Boolean = { true }, body: () -> Unit) {
+fun periodic(hz: Int = 20, condition: () -> Boolean = { true }, body: () -> Unit) {
     val period : Double = (1000 / hz).toDouble()
     while (condition()) {
         val start = systemTimeMillis

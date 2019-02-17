@@ -1,22 +1,7 @@
 package frc.team1458.robot
 
-import frc.team1458.lib.actuator.SmartMotor
-import frc.team1458.lib.sensor.*
-import frc.team1458.lib.sensor.interfaces.*
 import frc.team1458.lib.core.BaseRobot
-import frc.team1458.lib.input.interfaces.Switch
-import frc.team1458.lib.pid.PIDConstants
-import frc.team1458.lib.odom.EncoderOdom
-import frc.team1458.lib.drive.ClosedLoopTank
-import frc.team1458.lib.pathfinding.*
-import frc.team1458.lib.util.LiveDashboard
-import frc.team1458.lib.util.TelemetryLogger
 import frc.team1458.lib.util.flow.delay
-import frc.team1458.lib.util.maths.TurtleMaths
-import frc.team1458.robot.VisionTable.camera
-import java.io.PrintWriter
-import kotlin.math.min
-import kotlin.math.sqrt
 
 class Robot : BaseRobot() {
 
