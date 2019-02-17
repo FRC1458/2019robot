@@ -13,6 +13,7 @@ import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.TelemetryLogger
 import frc.team1458.lib.util.flow.delay
 import frc.team1458.lib.util.maths.TurtleMaths
+import frc.team1458.robot.VisionTable.camera
 import java.io.PrintWriter
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -22,6 +23,8 @@ class Robot : BaseRobot() {
     private val oi: OI = OI()
     val robot = RobotMap()
 
+    var camera = 0
+
     private var drivetrainReversed = false
 
 
@@ -30,16 +33,17 @@ class Robot : BaseRobot() {
         robot.drivetrain.rightMaster.connectedEncoder.zero()
 
         VisionTable.setup()
-        TelemetryLogger.setup(
+
+        /*TelemetryLogger.setup(
             arrayOf(
                 "leftEncoderDistance",
                 "rightEncoderDistance"
             )
-        )
+        )*/
     }
 
     override fun runAuto() {
-        println("Warning: Sandstorm")
+        println("My battery is low and it's getting dark")
 
         teleopInit()
         while (super.isAutonomous() && super.isEnabled()) {
@@ -55,20 +59,24 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopPeriodic() {
-        TelemetryLogger.startIteration()
+        //TelemetryLogger.startIteration()
 
         // check if need to reverse DT
-        var camera = -1
 
-        if(oi.forwardButton.triggered) {
+        if(oi.forwardButton.triggered) { // front vision camera
             drivetrainReversed = false
             camera = 0
-        } else if(oi.forwardLineButton.triggered) {
+            VisionTable.camera!!.setDouble(camera.toDouble())
+        }
+        else if(oi.forwardLineButton.triggered) { // front downward-facing
             drivetrainReversed = false
             camera = 1
-        } else if(oi.reverseButton.triggered) {
+            VisionTable.camera!!.setDouble(camera.toDouble())
+        }
+        else if(oi.reverseButton.triggered) { // rear (cargo target)
             drivetrainReversed = true
             camera = 2
+            VisionTable.camera!!.setDouble(camera.toDouble())
         }
 
 
@@ -104,23 +112,36 @@ class Robot : BaseRobot() {
 
         robot.autoClimber.update(oi.throttleAxis.value)
 
-
-        // change camera only if camera changed
-        if(camera != -1) {
-            VisionTable.camera!!.setDouble(camera.toDouble())
+        if(oi.visionEnableButton.triggered) {
+            VisionTable.visionReady!!.setBoolean(false)
+            VisionTable.visionEnable!!.setBoolean(true)
+        } else {
+            VisionTable.visionReady!!.setBoolean(false)
         }
 
-        // TODO unbork vision stuff
-        robot.drivetrain.arcadeDrive(if(drivetrainReversed)
-                                        { -oi.throttleAxis.value }
-                                    else
-                                        { oi.throttleAxis.value },
-                                    oi.steerAxis.value)
+        if(oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
+            val (kP, kD) = arrayOf(
+                    Pair(1.2, 0.0), // front vision camera
+                    Pair(1.2, 0.3), // front downward-facing
+                    Pair(1.2, 0.0) // rear (cargo target)
+            )[camera]
 
-        TelemetryLogger.putValue("leftEncoderDistance", robot.drivetrain.leftMaster.connectedEncoder.angle)
+            val steer = kP * VisionTable.horizOffset!!.getDouble(0.0) +
+                    kD * VisionTable.angleOffset!!.getDouble(0.0)
+
+            val speed = 0.75 * (if(drivetrainReversed) { -oi.throttleAxis.value } else { oi.throttleAxis.value })
+
+            robot.drivetrain.arcadeDrive(speed, steer)
+
+        } else { // normal driving
+            robot.drivetrain.arcadeDrive(if(drivetrainReversed) { -oi.throttleAxis.value } else { oi.throttleAxis.value },
+                    oi.steerAxis.value)
+        }
+
+        /*TelemetryLogger.putValue("leftEncoderDistance", robot.drivetrain.leftMaster.connectedEncoder.angle)
         TelemetryLogger.putValue("rightEncoderDistance", robot.drivetrain.rightMaster.connectedEncoder.angle)
 
-        TelemetryLogger.endIteration()
+        TelemetryLogger.endIteration()*/
     }
 
     override fun runTest() {

@@ -16,7 +16,8 @@ class OI {
     val forwardLineButton = rightStick.getButton(2)
     val reverseButton = rightStick.getButton(3)
 
-    val visionFollowButton = rightStick.trigger
+    val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
+    val visionFollowButton = rightStick.trigger // actually follows drivetrain
 
     val controlBoard = Gamepad.xboxController(2) // not really an xbox controller
 
@@ -28,6 +29,5 @@ class OI {
     val hatchGrab = controlBoard.getButton(1000)
     val hatchRelease = controlBoard.getButton(1000)
 
-    val climbSwitch = controlBoard.getButton(1000)
-
+    val climbSwitch = Switch.toggleSwitch(controlBoard.getButton(1000)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
 }

@@ -25,7 +25,7 @@ object TelemetryLogger {
             "/media/sda1/logs/Log$logNumber.csv"
         } catch (e: Exception) {
             println(e.stackTrace)
-            "/media/sda1/logs/LogERROR.csv"
+            "/tmp/LogERROR.csv"
         }
 
 
