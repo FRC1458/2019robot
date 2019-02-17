@@ -71,23 +71,9 @@ abstract class BaseRobot : SampleRobot {
     override fun operatorControl() {
         teleopInit()
         while (super.isOperatorControl() && super.isEnabled()) {
-            var lastStartMillis = systemTimeMillis
-            TelemetryLogger.startIteration()
             teleopPeriodic()
-            TelemetryLogger.endIteration()
-            var lastEndMillis = systemTimeMillis
 
-            // TODO see if this is still an issue - came up before : if(lastEndMillis - lastStartMillis > 20)
-
-            var nextStartMillis : Double = lastStartMillis
-
-            while(nextStartMillis < lastEndMillis || (nextStartMillis.toLong() % 20) != 0L) {
-                nextStartMillis += 1
-            }
-
-            while(systemTimeMillis < nextStartMillis) {
-                delay(1)
-            }
+            delay(1)
         }
     }
 

@@ -17,14 +17,15 @@ object TelemetryLogger {
     private var fileWriter : BufferedWriter? = null
     var iteration = 0
 
-    fun newFilename() : String {
-        try {
+    private fun newFilename() : String {
+        return try {
             val logNumber = File("/media/sda1/logNumber.txt").readText().trim().toInt() + 1
             File("/media/sda1/logNumber.txt").writeText(logNumber.toString())
 
-            return "/media/sda1/logs/Log$logNumber.csv"
+            "/media/sda1/logs/Log$logNumber.csv"
         } catch (e: Exception) {
-            return "/media/sda1/logs/LogERROR.csv"
+            println(e.stackTrace)
+            "/media/sda1/logs/LogERROR.csv"
         }
 
 
@@ -35,14 +36,14 @@ object TelemetryLogger {
         try {
             val filename = newFilename()
             val _keys = arrayOf("timestamp").plus(keys)
-            header = _keys.reduce({ acc, key -> acc + "," + key}).removeSuffix(",") + "\n"
+            header = _keys.reduce { acc, key -> "$acc,$key" }.removeSuffix(",") + "\n"
             logKeys = _keys
 
             fileWriter = BufferedWriter(FileWriter(filename, false))
             fileWriter?.write(header)
             fileWriter?.flush()
         } catch (e: Exception) {
-
+            println(e.stackTrace)
         }
     }
 
@@ -65,7 +66,7 @@ object TelemetryLogger {
         try {
             if(iteration % 5 == 0) {
                 var line = logKeys?.map { key -> currentIterationData[key] }?.
-                        reduce({ acc, value -> acc + "," + value }) + "\n"
+                        reduce { acc, value -> "$acc,$value" } + "\n"
                 // data += line
 
                 //System.out.println(line)
