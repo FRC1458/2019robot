@@ -3,12 +3,15 @@ package frc.team1458.robot
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
 import frc.team1458.lib.input.interfaces.Switch
+import frc.team1458.lib.util.flow.systemTimeMillis
 
 class AutoClimber(val front1: Solenoid, val front2: Solenoid, val rear1: Solenoid, val rear2: Solenoid, val motor: SmartMotor, val sensor: Switch) {
     var frontExtended = false
     var rearExtended = false
 
     var oneShot = false
+
+    var lastClimb = 0.0
 
     init {
         front1.retract()
@@ -26,14 +29,14 @@ class AutoClimber(val front1: Solenoid, val front2: Solenoid, val rear1: Solenoi
     fun update(speed: Double) {
         if(rearExtended) {
             motor.speed = speed
+
+            if(sensor.triggered && (systemTimeMillis - lastClimb) > 1500) {
+                front1.retract()
+                front2.retract()
+                frontExtended = false
+            }
         } else {
             motor.speed = 0.0
-        }
-
-        if(sensor.triggered) {
-            front1.retract()
-            front2.retract()
-            frontExtended = false
         }
     }
 
@@ -50,6 +53,8 @@ class AutoClimber(val front1: Solenoid, val front2: Solenoid, val rear1: Solenoi
         front2.extend()
         rear1.extend()
         rear2.extend()
+
+        lastClimb = systemTimeMillis
 
         println("Them ions be goin")
     }
