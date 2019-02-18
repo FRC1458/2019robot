@@ -13,7 +13,6 @@ class Robot : BaseRobot() {
     var camera = 0
 
     private var drivetrainReversed = false
-
     private val logging = ThreadLogger(5000)
 
 
@@ -111,6 +110,13 @@ class Robot : BaseRobot() {
             oi.intakeReverseButton.triggered -> robot.intake.reverse()
             oi.intakePanicButton.triggered -> robot.intake.panic()
             else -> robot.intake.stop()
+        }
+
+        // Ball intake ramp
+        if(oi.intakeRampSwitch.triggered) {
+            robot.ramp.setRaw(1.0)
+        } else {
+            robot.ramp.setRaw(0.0)
         }
 
 

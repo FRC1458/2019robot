@@ -1,6 +1,7 @@
 package frc.team1458.robot
 
 import frc.team1458.lib.actuator.Compressor
+import frc.team1458.lib.actuator.Servo
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
 import frc.team1458.lib.drive.ClosedLoopTank
@@ -29,10 +30,10 @@ class RobotMap {
     val pressureSensor = AnalogPressureSensor(1)
 
     val intake = Intake(motor = SmartMotor.CANtalonSRX(11), speedFwd = 0.8, speedRev = -0.4, speedPanic = 1.0)
+    val ramp = Servo(2)
 
     val hatchIntake = HatchIntake(upDown = Solenoid.Companion.doubleSolenoid(PCMcanID = 1, extendChannel = 0, retractChannel = 1),
                                      openClose = Solenoid.Companion.doubleSolenoid(PCMcanID = 0, extendChannel = 4, retractChannel = 5))
-
 
     val climberSensor = DistanceSensor.irSensor(channel = 0, m = 1.0, b = 0.0) // m = meters per volt
 

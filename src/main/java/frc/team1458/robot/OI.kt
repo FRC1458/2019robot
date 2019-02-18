@@ -24,7 +24,9 @@ class OI {
     // TODO unbork pls
     val intakeForwardButton = leftStick.getButton(11)
     val intakeReverseButton = leftStick.getButton(12)
-    val intakePanicButton = leftStick.getButton(13)
+    val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
+
+    val intakeRampSwitch = Switch.toggleSwitch(leftStick.getButton(13))
 
     val hatchUpDownSwitch = Switch.toggleSwitch(leftStick.getButton(16)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
     val hatchGrab = leftStick.getButton(15)
