@@ -94,12 +94,7 @@ class Robot : BaseRobot() {
             else -> robot.intake.stop()
         }
 
-        // Ball intake ramp
-        if(oi.intakeRampSwitch.triggered) {
-            robot.ramp.setRaw(1.0)
-        } else {
-            robot.ramp.setRaw(0.0)
-        }
+
 
 
         // hatch intake
@@ -117,33 +112,20 @@ class Robot : BaseRobot() {
 
 
         // climby climby
-        /*if (oi.climbSwitch.triggered) {
-            robot.autoClimber.extend()
-        } else {
-            robot.autoClimber.retract()
+        if (oi.climb1.triggered) {
+            println("climb 1")
+            robot.climber.raise()
+        }
+        if(oi.climb2.triggered) {
+            println("climb 2")
+            robot.climber.frontDown()
+        }
+        if(oi.climb3.triggered) {
+            println("climb 3")
+            robot.climber.rearDown()
         }
 
-        robot.autoClimber.update(oi.throttleAxis.value)*/
-
-        if (oi.controlBoard.getButton(5).triggered) {
-            println("both extend")
-            robot.autoClimber.rear.extend()
-            delay(100)
-            robot.autoClimber.front.extend()
-            climbStarted = true
-        }
-
-        if (oi.controlBoard.getButton(6).triggered) {
-            println("both retract")
-            robot.autoClimber.rear.retract()
-            robot.autoClimber.front.retract()
-        }
-
-        if (oi.controlBoard.getButton(10).triggered) {
-            println("rear retract")
-        }
-
-        robot.autoClimber.motor.speed = oi.throttleAxis.value * 0.50
+        robot.climber.update(oi.throttleAxis.value)
 
 
 
@@ -210,7 +192,7 @@ class Robot : BaseRobot() {
         // logging.update("psi", robot.pressureSensor.pressure)
 
         while (this.isEnabled) {
-            if (oi.controlBoard.getButton(5).triggered) {
+            /*if (oi.controlBoard.getButton(5).triggered) {
                 println("front extend")
                 robot.autoClimber.front.extend()
             } else {
@@ -224,7 +206,7 @@ class Robot : BaseRobot() {
             } else {
                 println("rear retract")
                 robot.autoClimber.rear.retract()
-            }
+            }*/
 
             /*if (oi.controlBoard.getButton(1).triggered) { // front1
                 if (oi.controlBoard.getButton(5).triggered) {

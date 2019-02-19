@@ -38,8 +38,8 @@ class RobotMap {
 
     private val climberSensor = DistanceSensor.irSensor(channel = 0, m = 1.0, b = 0.0) // m = meters per volt
 
-    val autoClimber = AutoClimber(front = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 5, retractChannel = 4),
+    val climber = ManualClimber(regulator = Solenoid.doubleSolenoid(PCMcanID = 100, extendChannel = 1000, retractChannel = 1000),
+                                front = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 5, retractChannel = 4),
                                   rear = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 3, retractChannel = 2),
-                                  motor = SmartMotor.CANtalonSRX(4).inverted,
-                                  sensor = Switch.create { climberSensor.distanceMeters > 1.0 }) // arbitrary weird noncoherent value but works
+                                  motor = SmartMotor.CANtalonSRX(4).inverted) // arbitrary weird noncoherent value but works
 }

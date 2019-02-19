@@ -2,6 +2,7 @@ package frc.team1458.robot
 
 import frc.team1458.lib.input.FlightStick
 import frc.team1458.lib.input.Gamepad
+import frc.team1458.lib.input.interfaces.POV
 import frc.team1458.lib.input.interfaces.Switch
 
 class OI {
@@ -26,11 +27,11 @@ class OI {
     val intakeReverseButton = controlBoard.getButton(6)
     val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
 
-    val intakeRampSwitch = Switch.toggleSwitch(controlBoard.getButton(4))
-
     val hatchUpDownSwitch = Switch.toggleSwitch(controlBoard.getButton(3)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
     val hatchGrab = controlBoard.getButton(1)
     val hatchRelease = controlBoard.getButton(2)
 
-    val climbSwitch = Switch.ALWAYS_OFF // Switch.toggleSwitch(leftStick.getButton(7)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
+    val climb1 = controlBoard.getButton(4)
+    val climb2 = controlBoard.getButton(5)
+    val climb3 = controlBoard.getButton(6)
 }
