@@ -2,7 +2,9 @@ package frc.team1458.robot
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.core.BaseRobot
+import frc.team1458.lib.sensor.PDP
 import frc.team1458.lib.util.flow.delay
+import frc.team1458.lib.util.flow.systemTimeMillis
 import frc.team1458.lib.util.logging.ThreadLogger
 
 class Robot : BaseRobot() {
@@ -21,52 +23,27 @@ class Robot : BaseRobot() {
         // robot.drivetrain.rightMaster.connectedEncoder.zero()
 
         VisionTable.setup()
-        logging.setup(logDirectory = "/tmp/logs/", keys = arrayOf("psi"))
-        logging.start()
 
-        /*TelemetryLogger.setup(
-            arrayOf(
-                "leftEncoderDistance",
-                "rightEncoderDistance"
-            )
-        )*/
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        SmartDashboard.putNumber("kP", 0.2)
+        SmartDashboard.putNumber("kD", 0.0)
+
+        try {
+            logging.setup(logDirectory = "/home/lvuser/logs/", keys = arrayOf("psi"))
+            logging.start()
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
+
     }
 
     override fun runAuto() {
-        println("My battery is low and it's getting dark")
-
-
-        // 12 - right, inverted
-        // 18 - right, inverted
-        // 6  - left/forward
-        // 10 - left/forward
-
-        /*var m = SmartMotor.CANtalonSRX(12)
-        println("running 12")
-        m.speed = 0.5
-        delay(5000)
-        m.speed = 0.0
-
-        m = SmartMotor.CANtalonSRX(18)
-        println("running 18")
-        m.speed = 0.5
-        delay(5000)
-        m.speed = 0.0
-
-        m = SmartMotor.CANtalonSRX(6)
-        println("running 6")
-        m.speed = 0.5
-        delay(5000)
-        m.speed = 0.0
-
-        m = SmartMotor.CANtalonSRX(10)
-        println("running 10")
-        m.speed = 0.5
-        delay(5000)
-        m.speed = 0.0
-
-        return*/
-
+        println("Auto Enabled")
 
         teleopInit()
 
@@ -78,14 +55,19 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopInit() {
-        println("Let's think about what these ions are doing")
+        println("Teleop Enabled")
 
         robot.compressor.start()
+
     }
 
-    override fun teleopPeriodic() {
-        // check if need to reverse DT
+    var last : Double = 0.0
+    var lastTime : Double = 0.0
+    var climbStarted : Boolean = false
 
+    override fun teleopPeriodic() {
+
+        // check if need to reverse DT
         if (oi.forwardButton.triggered) { // front vision camera
             drivetrainReversed = false
             camera = 0
@@ -135,30 +117,60 @@ class Robot : BaseRobot() {
 
 
         // climby climby
-        if (oi.climbSwitch.triggered) {
+        /*if (oi.climbSwitch.triggered) {
             robot.autoClimber.extend()
         } else {
             robot.autoClimber.retract()
         }
 
-        robot.autoClimber.update(oi.throttleAxis.value)
+        robot.autoClimber.update(oi.throttleAxis.value)*/
+
+        if (oi.controlBoard.getButton(5).triggered) {
+            println("both extend")
+            robot.autoClimber.rear.extend()
+            delay(100)
+            robot.autoClimber.front.extend()
+            climbStarted = true
+        }
+
+        if (oi.controlBoard.getButton(6).triggered) {
+            println("both retract")
+            robot.autoClimber.rear.retract()
+            robot.autoClimber.front.retract()
+        }
+
+        if (oi.controlBoard.getButton(10).triggered) {
+            println("rear retract")
+        }
+
+        robot.autoClimber.motor.speed = oi.throttleAxis.value * 0.50
+
+
 
         if (oi.visionEnableButton.triggered) {
-            VisionTable.visionReady!!.setBoolean(false)
             VisionTable.visionEnable!!.setBoolean(true)
         } else {
             VisionTable.visionReady!!.setBoolean(false)
+            VisionTable.visionEnable!!.setBoolean(false)
         }
 
         if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
+
+            val x = SmartDashboard.getNumber("kP", 0.2)
+            val y = SmartDashboard.getNumber("kD", 0.0)
+
             val (kP, kD) = arrayOf(
-                Pair(1.2, 0.0), // front vision camera
-                Pair(1.2, 0.3), // front downward-facing
-                Pair(1.2, 0.0) // rear (cargo target)
+                Pair(x, y), // front vision camera
+                Pair(x, y), // front downward-facing
+                Pair(x, y) // rear (cargo target)
             )[camera]
 
-            val steer = kP * VisionTable.horizOffset!!.getDouble(0.0) +
-                    kD * VisionTable.angleOffset!!.getDouble(0.0)
+            val offset = VisionTable.horizOffset!!.getDouble(0.0)
+
+            val steer = kP * offset - (kD * (last - offset) / (0.001 * (lastTime - systemTimeMillis)))
+
+            last = offset
+            lastTime = systemTimeMillis
 
             val speed = 0.75 * (if (drivetrainReversed) {
                 -oi.throttleAxis.value
@@ -168,8 +180,8 @@ class Robot : BaseRobot() {
 
             robot.drivetrain.arcadeDrive(speed, steer)
 
-        } else if (oi.climbSwitch.triggered) { // climbing driving
-            robot.drivetrain.arcadeDrive(oi.throttleAxis.value * 0.25, 0.0)
+        } else if (climbStarted) { // climbing driving
+            robot.drivetrain.arcadeDrive(oi.throttleAxis.value * 0.15, 0.0)
         } else { // normal driving
             robot.drivetrain.arcadeDrive(
                 if (drivetrainReversed) {
@@ -182,24 +194,124 @@ class Robot : BaseRobot() {
         }
 
         // Logging
-        SmartDashboard.putNumber("pressure", robot.pressureSensor.pressure)
-        logging.update("psi", robot.pressureSensor.pressure)
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
     }
 
     override fun runTest() {
-        logging.update("psi", robot.pressureSensor.pressure)
+        // logging.update("psi", robot.pressureSensor.pressure)
+
+        while (this.isEnabled) {
+            if (oi.controlBoard.getButton(5).triggered) {
+                println("front extend")
+                robot.autoClimber.front.extend()
+            } else {
+                println("front retract")
+                robot.autoClimber.front.retract()
+            }
+
+            if (oi.controlBoard.getButton(6).triggered) {
+                println("rear extend")
+                robot.autoClimber.rear.extend()
+            } else {
+                println("rear retract")
+                robot.autoClimber.rear.retract()
+            }
+
+            /*if (oi.controlBoard.getButton(1).triggered) { // front1
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("front1 extending")
+                    robot.autoClimber.front1.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.front1.retract()
+                }
+
+            }
+
+            if (oi.controlBoard.getButton(2).triggered) { // front2
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("front2 extending")
+                    robot.autoClimber.front2.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.front2.retract()
+                }
+            }
+
+            if (oi.controlBoard.getButton(3).triggered) { // rear1
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("rear1 extending")
+                    robot.autoClimber.rear1.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.rear1.retract()
+                }
+            }
+
+            if (oi.controlBoard.getButton(4).triggered) { // rear2
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("rear2 extending")
+                    robot.autoClimber.rear2.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.rear2.retract()
+                }
+            }*/
+
+            // Logging
+            SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+            SmartDashboard.putData("PDP", PDP.pdp)
+
+            /*try {
+                logging.update("psi", robot.pressureSensor.pressure.toString())
+            }
+            catch (e: Exception) {
+                println("BIG BORK LOGGING BORKED!")
+                e.printStackTrace()
+            }*/
+        }
     }
 
     override fun robotDisabled() {
         robot.drivetrain.setDriveVelocity(0.0, 0.0)
+        println("Robot Disabled")
 
-        println("Disabled")
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
     }
 
     override fun disabledPeriodic() {
         // Communism
-        SmartDashboard.putNumber("pressureeeeee", robot.pressureSensor.pressure)
-        logging.update("psi", robot.pressureSensor.pressure)
+
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
     }
 }
 

@@ -19,18 +19,18 @@ class OI {
     val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
     val visionFollowButton = rightStick.trigger // actually follows drivetrain
 
-    private val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
+    val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
 
     // TODO unbork pls
-    val intakeForwardButton = leftStick.getButton(11)
-    val intakeReverseButton = leftStick.getButton(12)
+    val intakeForwardButton = controlBoard.getButton(5)
+    val intakeReverseButton = controlBoard.getButton(6)
     val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
 
-    val intakeRampSwitch = Switch.toggleSwitch(leftStick.getButton(13))
+    val intakeRampSwitch = Switch.toggleSwitch(controlBoard.getButton(4))
 
-    val hatchUpDownSwitch = Switch.toggleSwitch(leftStick.getButton(16)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
-    val hatchGrab = leftStick.getButton(15)
-    val hatchRelease = leftStick.getButton(14)
+    val hatchUpDownSwitch = Switch.toggleSwitch(controlBoard.getButton(3)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
+    val hatchGrab = controlBoard.getButton(1)
+    val hatchRelease = controlBoard.getButton(2)
 
     val climbSwitch = Switch.ALWAYS_OFF // Switch.toggleSwitch(leftStick.getButton(7)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
 }

@@ -2,7 +2,7 @@ package frc.team1458.lib.util.logging
 
 import java.io.File
 
-class ThreadLogger(private val delayTimeMS: Int = 15) {
+class ThreadLogger(private val delayTimeMS: Int = 15) { // TODO FIX
     private var runnable: LoggerRunnable? = null
     private var loggingThread: Thread? = null
 
