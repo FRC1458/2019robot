@@ -22,20 +22,16 @@ class LoggerRunnable(private val filePath: String,
     }
 
     fun setup() {
-        println("Setup called from runnable")
         val file = File(filePath)
 
         if (!file.exists()) {
             file.createNewFile()
-            println("File Created from runnable")
         }
 
         fileWriter = FileWriter(file.absoluteFile)
         bufferedWriter = BufferedWriter(fileWriter)
-        println("Writer Objects Created From Runnable")
 
         bufferedWriter?.write("ts")
-        println("wrote ts wit")
 
         for (key in keys) {
             bufferedWriter?.write(",$key")

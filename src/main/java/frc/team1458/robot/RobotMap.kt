@@ -1,14 +1,11 @@
 package frc.team1458.robot
 
 import frc.team1458.lib.actuator.Compressor
-import frc.team1458.lib.actuator.Servo
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
 import frc.team1458.lib.drive.ClosedLoopTank
-import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.sensor.AnalogPressureSensor
-import frc.team1458.lib.sensor.PDP
 import frc.team1458.lib.sensor.interfaces.DistanceSensor
 
 class RobotMap {
@@ -30,15 +27,14 @@ class RobotMap {
     val compressor = Compressor(PCMcanID = 0)
     val pressureSensor = AnalogPressureSensor(1)
 
-    val intake = Intake(motor = SmartMotor.CANtalonSRX(11), speedFwd = 0.8, speedRev = -0.4, speedPanic = 1.0)
-    val ramp = Servo(2)
+    val intake = Intake(motor = SmartMotor.CANtalonSRX(11), speedFwd = 0.6, speedRev = -0.4, speedPanic = 1.0)
 
-    val hatchIntake = HatchIntake(upDown = Solenoid.doubleSolenoid(PCMcanID = 0, extendChannel = 0, retractChannel = 1),
+    val hatchIntake = HatchIntake(upDown = Solenoid.doubleSolenoid(PCMcanID = 0, extendChannel = 1, retractChannel = 0),
                                      openClose = Solenoid.doubleSolenoid(PCMcanID = 0, extendChannel = 4, retractChannel = 5))
 
     private val climberSensor = DistanceSensor.irSensor(channel = 0, m = 1.0, b = 0.0) // m = meters per volt
 
-    val climber = ManualClimber(regulator = Solenoid.doubleSolenoid(PCMcanID = 100, extendChannel = 1000, retractChannel = 1000),
+    val climber = ManualClimber(regulator = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 0, retractChannel = 1),
                                 front = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 5, retractChannel = 4),
                                   rear = Solenoid.doubleSolenoid(PCMcanID = 1, extendChannel = 3, retractChannel = 2),
                                   motor = SmartMotor.CANtalonSRX(4).inverted) // arbitrary weird noncoherent value but works

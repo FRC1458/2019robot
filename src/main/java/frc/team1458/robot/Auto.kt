@@ -4,8 +4,6 @@ import frc.team1458.lib.util.maths.TurtleMaths
 import frc.team1458.lib.drive.ClosedLoopTank
 import frc.team1458.lib.odom.EncoderOdom
 import frc.team1458.lib.pathfinding.PurePursuitFollower
-import frc.team1458.lib.pid.PID
-import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.delay

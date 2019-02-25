@@ -2,7 +2,6 @@ package frc.team1458.robot
 
 import frc.team1458.lib.input.FlightStick
 import frc.team1458.lib.input.Gamepad
-import frc.team1458.lib.input.interfaces.POV
 import frc.team1458.lib.input.interfaces.Switch
 
 class OI {
@@ -20,7 +19,7 @@ class OI {
     val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
     val visionFollowButton = rightStick.trigger // actually follows drivetrain
 
-    val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
+    private val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
 
     // TODO unbork pls
     val intakeForwardButton = controlBoard.getButton(5)

@@ -19,17 +19,38 @@ class Robot : BaseRobot() {
 
 
     override fun robotSetup() {
-        // robot.drivetrain.leftMaster.connectedEncoder.zero()
-        // robot.drivetrain.rightMaster.connectedEncoder.zero()
-
         VisionTable.setup()
 
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        SmartDashboard.putNumber("kP", 0.2)
-        SmartDashboard.putNumber("kD", 0.0)
+        SmartDashboard.putNumber("kP", 0.35)
+        SmartDashboard.putNumber("kD", -0.2)
+
+        val LIMIT_MAX = 20
+        val LIMIT_CONT = LIMIT_MAX
+        val TIME = 100
+
+        robot.drivetrain.leftMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.enableCurrentLimit(true)
+
+        robot.drivetrain.rightMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.enableCurrentLimit(true)
+
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.enableCurrentLimit(true)
+
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.enableCurrentLimit(true)
 
         try {
             logging.setup(logDirectory = "/home/lvuser/logs/", keys = arrayOf("psi"))
@@ -45,6 +66,9 @@ class Robot : BaseRobot() {
     override fun runAuto() {
         println("Auto Enabled")
 
+        robot.hatchIntake.grab()
+        robot.hatchIntake.down()
+
         teleopInit()
 
         while (super.isAutonomous() && super.isEnabled()) {
@@ -55,10 +79,9 @@ class Robot : BaseRobot() {
     }
 
     override fun teleopInit() {
-        println("Teleop Enabled")
+        println("Teleoperated Enabled")
 
         robot.compressor.start()
-
     }
 
     var last : Double = 0.0
@@ -138,8 +161,8 @@ class Robot : BaseRobot() {
 
         if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
 
-            val x = SmartDashboard.getNumber("kP", 0.2)
-            val y = SmartDashboard.getNumber("kD", 0.0)
+            val x = SmartDashboard.getNumber("kP", 0.35)
+            val y = SmartDashboard.getNumber("kD", -0.2)
 
             val (kP, kD) = arrayOf(
                 Pair(x, y), // front vision camera
@@ -160,7 +183,7 @@ class Robot : BaseRobot() {
                 oi.throttleAxis.value
             })
 
-            robot.drivetrain.arcadeDrive(speed, steer)
+            robot.drivetrain.arcadeDrive(speed, ((0.8*speed)+0.2) * steer)
 
         } else if (climbStarted) { // climbing driving
             robot.drivetrain.arcadeDrive(oi.throttleAxis.value * 0.15, 0.0)

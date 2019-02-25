@@ -33,7 +33,7 @@ interface SmartMotor : Motor, PowerMeasurable {
 
     override val inverted: SmartMotor
 
-    val _talonInstance : IMotorController?
+    val _talonInstance : TalonSRX?
 
     fun follow(other: SmartMotor)
     fun stopFollow()
@@ -156,7 +156,7 @@ interface SmartMotor : Motor, PowerMeasurable {
                 override val currentDraw: Double
                     get() = talon.outputCurrent
 
-                override val _talonInstance: IMotorController?
+                override val _talonInstance: TalonSRX?
                     get() = talon
             }
         }

@@ -2,7 +2,6 @@ package frc.team1458.robot
 
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
-import frc.team1458.lib.input.interfaces.Switch
 import frc.team1458.lib.util.flow.delay
 
 class ManualClimber(val regulator: Solenoid, val front: Solenoid, val rear: Solenoid, val motor: SmartMotor) {
@@ -12,7 +11,9 @@ class ManualClimber(val regulator: Solenoid, val front: Solenoid, val rear: Sole
     init {
         front.retract()
         rear.retract()
+
         delay(250)
+
         regulator.extend()
 
         // TODO uncomment this if you see smoke coming out of the bot
