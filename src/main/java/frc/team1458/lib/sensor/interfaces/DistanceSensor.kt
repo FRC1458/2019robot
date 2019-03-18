@@ -84,6 +84,11 @@ interface DistanceSensor : Zeroable {
             return create { ultrasonic.rangeMM / 1000.0 }
         }
 
+        fun irSensor(channel: Int, m: Double, b: Double = 0.0) : DistanceSensor {
+            val ir = AnalogInput(channel)
+            return DistanceSensor.create { (ir.voltage * m) + b }
+        }
+
         fun analogUltrasonic(channel: Int, voltsToMeters: Double) : DistanceSensor {
             val ultrasonic = AnalogInput(channel)
             return DistanceSensor.create { ultrasonic.voltage * voltsToMeters }

@@ -4,8 +4,6 @@ import frc.team1458.lib.util.maths.TurtleMaths
 import frc.team1458.lib.drive.ClosedLoopTank
 import frc.team1458.lib.odom.EncoderOdom
 import frc.team1458.lib.pathfinding.PurePursuitFollower
-import frc.team1458.lib.pid.PID
-import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.util.LiveDashboard
 import frc.team1458.lib.util.flow.delay
@@ -118,16 +116,16 @@ class Auto(
         drivetrain.setDriveVelocity(0.0, 0.0)
     }
 
-    fun followVisionLine(seconds: Double = 20.0, speed: Double = 6.0) {
+    fun followVisionLine(seconds: Double = 20.0, speed: Double = 3.0) {
         val startTime = systemTimeSeconds
 
-        val k1 = 1.3
-        val k2 = 0.4
+        val k1 = 1.3 // Proportional value of offset
+        val k2 = 0.4 // Proportional value of angle
 
         while ((startTime + seconds) > (systemTimeSeconds)) {
             val offset = LiveDashboard.getOffset()
             val angle = LiveDashboard.getAngle()
-            val steer = k1 * offset + k2 * angle
+            val steer = (k1 * offset) + (k2 * angle)
 
             // println(" $offset - $angle")
             drivetrain.setDriveVelocity(speed + steer, speed - steer)

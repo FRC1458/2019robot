@@ -35,7 +35,7 @@ interface Switch : DigitalInput {
 
     companion object {
         val ALWAYS_ON = create { true }
-        val ALWAYS_OFF = create { true }
+        val ALWAYS_OFF = create { false }
         val RANDOM = create(Random()::nextBoolean)
 
         fun create(value: () -> Boolean) : Switch {

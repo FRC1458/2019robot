@@ -1,20 +1,36 @@
 package frc.team1458.robot
 
 import frc.team1458.lib.input.FlightStick
+import frc.team1458.lib.input.Gamepad
+import frc.team1458.lib.input.interfaces.Switch
 
 class OI {
-    val leftStick: FlightStick = FlightStick.flightStick(1)
-    val rightStick: FlightStick = FlightStick.flightStick(0)
+    private val leftStick: FlightStick = FlightStick.flightStick(1)
+    private val rightStick: FlightStick = FlightStick.flightStick(0)
 
-    var steerAxis = leftStick.rollAxis.scale(0.5) //controlBoard.xbox.rightX.scale(0.35) //
+    // TODO check if inversion/scaleador
+    var steerAxis = leftStick.rollAxis.scale(0.5)
     var throttleAxis = rightStick.pitchAxis.inverted
 
-    var slowDownButton = rightStick.trigger
+    val forwardButton = rightStick.getButton(3)
+    val forwardLineButton = rightStick.getButton(2)
+    val reverseButton = rightStick.getButton(4)
 
-    val elevatorUp = leftStick.getButton(4)
-    val elevatorDown = leftStick.getButton(6)
+    val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
+    val visionFollowButton = rightStick.trigger // actually follows drivetrain
 
+    private val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
 
-    val intakeIn = leftStick.getButton(5)
-    val intakeOut = leftStick.getButton(2)
+    // TODO unbork pls
+    val intakeForwardButton = controlBoard.getButton(5)
+    val intakeReverseButton = controlBoard.getButton(6)
+    val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
+
+    val hatchUpDownSwitch = Switch.toggleSwitch(controlBoard.getButton(3)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
+    val hatchGrab = controlBoard.getButton(1)
+    val hatchRelease = controlBoard.getButton(2)
+
+    val climb1 = controlBoard.getButton(4)
+    val climb2 = controlBoard.getButton(5)
+    val climb3 = controlBoard.getButton(6)
 }

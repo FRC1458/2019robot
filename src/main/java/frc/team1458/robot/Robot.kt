@@ -1,326 +1,322 @@
 package frc.team1458.robot
 
-import frc.team1458.lib.actuator.SmartMotor
-import frc.team1458.lib.sensor.*
-import frc.team1458.lib.sensor.interfaces.*
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team1458.lib.core.BaseRobot
-import frc.team1458.lib.input.interfaces.Switch
-import frc.team1458.lib.pid.PIDConstants
-import frc.team1458.lib.odom.EncoderOdom
-import frc.team1458.lib.drive.ClosedLoopTank
-import frc.team1458.lib.pathfinding.*
-import frc.team1458.lib.util.LiveDashboard
-import frc.team1458.lib.util.maths.TurtleMaths
-import java.io.PrintWriter
-import kotlin.math.min
-import kotlin.math.sqrt
+import frc.team1458.lib.sensor.PDP
+import frc.team1458.lib.util.flow.delay
+import frc.team1458.lib.util.flow.systemTimeMillis
+import frc.team1458.lib.util.logging.ThreadLogger
 
 class Robot : BaseRobot() {
 
-    val oi: OI = OI()
-    val dt: ClosedLoopTank = ClosedLoopTank(
-        leftMaster = SmartMotor.CANtalonSRX(16),
-        rightMaster = SmartMotor.CANtalonSRX(22).inverted,
-        leftMotors = arrayOf(SmartMotor.CANtalonSRX(25)),
-        rightMotors = arrayOf(SmartMotor.CANtalonSRX(23).inverted),
-        closedLoopControl = true,
-        wheelDiameter = 0.5,
-        closedLoopScaling = 6.0, // TODO: determine
+    private val oi: OI = OI()
+    val robot = RobotMap()
 
-        // TODO Don't forget PID I is disabled for autonomous testing as it introduces errors: maybe 0.0 for I
-        pidConstantsLeft = PIDConstants(0.6, kI = 0.001/*3*/, kD = 0.00, kF = 1.0 / 1798.8), // These are decent
-        pidConstantsRight = PIDConstants(0.750, kI = 0.001/*5*/, kD = 0.05, kF = 1.0 / 1806.4)// These are decent2
-    )
+    var camera = 0
 
-    val drivetrainInverted: Boolean = false
-
-    // Intake stuff
-    val intakeEnabled: Boolean = false
-    val intake1 = SmartMotor.CANtalonSRX(17).inverted
-    val intake2 = SmartMotor.CANtalonSRX(19)
-
-    // Elevator stuff
-    val elevatorEnabled: Boolean = false
-    val mag1 = Switch.fromDIO(8).inverted
-    val mag2 = Switch.fromDIO(9).inverted
-    val elev1 = SmartMotor.CANtalonSRX(20).inverted
-    val elev2 = SmartMotor.CANtalonSRX(21).inverted
-    var elevatorSpeed =  0.0
-
-    // Autonomous stuff
-    val gyro: AngleSensor = NavX.MXP_I2C().yaw.inverted
-    val odom = EncoderOdom(dt.leftEnc, dt.rightEnc, gyro, latencyCompensation = true)
-
-    var velocities: Array<Double> = arrayOf()
-    var times: Array<Double> = arrayOf()
-
-    //smooth accelerating
-    var currInputValue: Double = 0.0
-    val threshhold = 0.03 //To Be Determined
-    //val velocityMap:(Long)-> Double = {x -> x * threshhold * 1000}
-    //var time_zero:Long = 0
-
-    //Thread logger
-    // val filePath: String = "log.csv"
-    // val logger: PrintWriter = PrintWriter(filePath)
-    // var data:HashMap<String, Any> = HashMap<String, Any>()
-    // val thread: ThreadingLogger = ThreadingLogger(logger, data)
-
-    var previousJoystick = oi.throttleAxis.value
-
+    private var drivetrainReversed = false
+    private val logging = ThreadLogger(5000)
 
 
     override fun robotSetup() {
-        // println("Setup")
+        VisionTable.setup()
 
-        // Don't zero later now
-        dt.leftMaster.connectedEncoder.zero()
-        dt.rightMaster.connectedEncoder.zero()
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
 
-        gyro.zero()
+        SmartDashboard.putNumber("kP", 0.35)
+        SmartDashboard.putNumber("kD", -0.2)
 
-        odom.setup()
-        odom.update()
+        val LIMIT_MAX = 20
+        val LIMIT_CONT = LIMIT_MAX
+        val TIME = 100
 
-        LiveDashboard.setup(13.0, 13.0)
-        LiveDashboard.endPath()
+        robot.drivetrain.leftMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.leftMaster._talonInstance!!.enableCurrentLimit(true)
 
-        //smooth acceleration
-        // currInputValue = oi.throttleAxis.value
-//        time_zero = System.currentTimeMillis()
+        robot.drivetrain.rightMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.rightMaster._talonInstance!!.enableCurrentLimit(true)
 
-        //Thread logger
-        /*
-        data.put("elevator speed, ", elevatorSpeed)
-        data.put("velocities, ", velocities)
-        data.put("times ", times)
-        data.put("oi.steerAxis, ", oi.steerAxis)
-        data.put("oi.throttleAxis, ", oi.throttleAxis)
-        data.put("oi.slowDownButton, ", oi.slowDownButton)
-        data.put("oi.leftDown, ", oi.leftStick.trigger)
-        data.put("oi.rightDown, ", oi.rightStick.trigger)
-        data.put("oi.elevatorUp, ", oi.elevatorUp.triggered)
-        data.put("oi.elevatorDown, ", oi.elevatorDown.triggered)
-        data.put("oi.intakeIn, ", oi.intakeIn.triggered)
-        data.put("oi.intakeOut, ", oi.intakeOut.triggered)
-        thread.start()
-        */
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.leftMotors[0]._talonInstance!!.enableCurrentLimit(true)
+
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
+        robot.drivetrain.rightMotors[0]._talonInstance!!.enableCurrentLimit(true)
+
+        try {
+            logging.setup(logDirectory = "/home/lvuser/logs/", keys = arrayOf("psi"))
+            logging.start()
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
 
     }
 
     override fun runAuto() {
-        println("Warning: Sandstorm")
+        println("Auto Enabled")
 
+        robot.hatchIntake.grab()
+        robot.hatchIntake.down()
 
-        /*
-        // Clear the visualizer before we start auto
-        LiveDashboard.endPath()
+        teleopInit()
 
-        dt.leftMaster.connectedEncoder.zero()
-        dt.rightMaster.connectedEncoder.zero()
-        gyro.zero()
-
-        odom.clear()
-        odom.setup()
-        odom.update()
-        */
-
-        // Square path
-        // val path = PathUtils.generateLinearPath(arrayOf(Pair(0.0, 0.0), Pair(10.0, 0.0), Pair(6.0, 6.0), Pair(0.0, 6.0), Pair(0.0, 0.0)), 250)
-
-        // TODO change number of points: has significant effect on any sort of driving , Pair(20.0, 10.0), Pair(20.0, -10.0)
-        // val turnPath = PathUtils.interpolateTurnArcWithAngle(90.0, 0.0, Pair(15.0, 0.0), "left", 15, 5.0)
-        val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 30, "left")
-        val pathCurvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
-        val pathNoCurvature = PathUtils.removeCurvature(pathCurvature)
-
-
-        val MAX_LINVEL = 5.0
-        val MAX_LINACCEL = 3.5
-        val MAX_CENTRIPITAL = 3.5
-
-
-        val length = pathNoCurvature.toList()
-            .zipWithNext { a, b -> TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) }.sum()
-
-        val maxvel = pathCurvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
-
-
-        val (x, v) = PathUtils.generateVXGraph(length, maxvel.toTypedArray(), MAX_LINACCEL, 0.0, 0.0)
-        val (t, vz) = PathUtils.xvTotv(x, v)
-
-        for (i in 0 until t.size) {
-            println("TVZ ${t[i]}, ${vz[i]}")
-
+        while (super.isAutonomous() && super.isEnabled()) {
+            teleopPeriodic()
+            delay(1)
         }
 
-        val vTimed = PathUtils.consistentTime(t, vz, 0.02)
-
-        val auto = Auto(this, dt, odom, gyro, automaticSpeedControl = false, putToDashboard = true, velocities = v, distances = x) // v
-
-        auto.startBasicPurePursuit(pathNoCurvature, 3.0)
-
-
     }
+
     override fun teleopInit() {
-        // likely nothing here
-        println("Start Data - left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
+        println("Teleoperated Enabled")
+
+        robot.compressor.start()
     }
+
+    var last : Double = 0.0
+    var lastTime : Double = 0.0
+    var climbStarted : Boolean = false
 
     override fun teleopPeriodic() {
-        odom.update()
-        LiveDashboard.putOdom(odom.pose)
-        // SmartDashboard.putNumber("GyroAngle", gyro.heading)
-        // println("left_enc: " + dt.leftEnc.distanceInches + " right_enc: " + dt.rightEnc.distanceInches)
-        // drive code - runs around 50hz
-        println("big bork 1")
-        /*
-        dt.arcadeDrive(
-            when {
-                drivetrainInverted -> -0.5 * (oi.throttleAxis.value)
-                oi.slowDownButton.triggered -> 0.5 * oi.throttleAxis.value
 
-                else -> oi.throttleAxis.value
-            },
-            if (drivetrainInverted) {
-                (oi.steerAxis.value)
+        // check if need to reverse DT
+        if (oi.forwardButton.triggered) { // front vision camera
+            drivetrainReversed = false
+            camera = 0
+            VisionTable.camera!!.setDouble(camera.toDouble())
+            println(camera)
+        } else if (oi.forwardLineButton.triggered) { // front downward-facing
+            drivetrainReversed = false
+            camera = 1
+            VisionTable.camera!!.setDouble(camera.toDouble())
+            println(camera)
+        } else if (oi.reverseButton.triggered) { // rear (cargo target)
+            drivetrainReversed = true
+            camera = 2
+            VisionTable.camera!!.setDouble(camera.toDouble())
+            println(camera)
+        }
+
+
+        // Ball intake
+        when {
+            oi.intakeForwardButton.triggered -> robot.intake.forward()
+            oi.intakeReverseButton.triggered -> robot.intake.reverse()
+            oi.intakePanicButton.triggered -> robot.intake.panic()
+            else -> robot.intake.stop()
+        }
+
+
+
+
+        // hatch intake
+        if (oi.hatchUpDownSwitch.triggered) {
+            robot.hatchIntake.up()
+        } else {
+            robot.hatchIntake.down()
+        }
+
+        if (oi.hatchGrab.triggered) {
+            robot.hatchIntake.grab()
+        } else if (oi.hatchRelease.triggered) {
+            robot.hatchIntake.release()
+        }
+
+
+        // climby climby
+        if (oi.climb1.triggered) {
+            println("climb 1")
+            robot.climber.raise()
+        }
+        if(oi.climb2.triggered) {
+            println("climb 2")
+            robot.climber.frontDown()
+        }
+        if(oi.climb3.triggered) {
+            println("climb 3")
+            robot.climber.rearDown()
+        }
+
+        robot.climber.update(oi.throttleAxis.value)
+
+
+
+        if (oi.visionEnableButton.triggered) {
+            VisionTable.visionEnable!!.setBoolean(true)
+        } else {
+            VisionTable.visionReady!!.setBoolean(false)
+            VisionTable.visionEnable!!.setBoolean(false)
+        }
+
+        if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
+
+            val x = SmartDashboard.getNumber("kP", 0.35)
+            val y = SmartDashboard.getNumber("kD", -0.2)
+
+            val (kP, kD) = arrayOf(
+                Pair(x, y), // front vision camera
+                Pair(x, y), // front downward-facing
+                Pair(x, y) // rear (cargo target)
+            )[camera]
+
+            val offset = VisionTable.horizOffset!!.getDouble(0.0)
+
+            val steer = kP * offset - (kD * (last - offset) / (0.001 * (lastTime - systemTimeMillis)))
+
+            last = offset
+            lastTime = systemTimeMillis
+
+            val speed = 0.75 * (if (drivetrainReversed) {
+                -oi.throttleAxis.value
             } else {
+                oi.throttleAxis.value
+            })
+
+            robot.drivetrain.arcadeDrive(speed, ((0.8*speed)+0.2) * steer)
+
+        } else if (climbStarted) { // climbing driving
+            robot.drivetrain.arcadeDrive(oi.throttleAxis.value * 0.15, 0.0)
+        } else { // normal driving
+            robot.drivetrain.arcadeDrive(
+                if (drivetrainReversed) {
+                    -oi.throttleAxis.value
+                } else {
+                    oi.throttleAxis.value
+                },
                 oi.steerAxis.value
-            }
-        )
-        */
-
-        var steerInput = oi.throttleAxis.value
-        if (steerInput - previousJoystick > 0.2){
-            steerInput = TurtleMaths.constrain(steerInput + 0.005, -1.0, 1.0)
-        }
-        else if (steerInput - previousJoystick < -0.2)
-        {
-            steerInput = TurtleMaths.constrain(steerInput - 0.005, -1.0, 1.0)
+            )
         }
 
-        dt.arcadeDrive(
-            when {
-                drivetrainInverted -> -0.5 * (oi.throttleAxis.value)
-                oi.slowDownButton.triggered -> 0.5 * oi.throttleAxis.value
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
 
-                else -> oi.throttleAxis.value
-            },
-            if (drivetrainInverted) {
-                (oi.steerAxis.value)
-            } else {
-                steerInput
-            }
-        )
-
-        previousJoystick = oi.throttleAxis.value
-
-        println("big Bork 2")
-        // Elevator control code
-        if (elevatorEnabled) {
-            if (oi.elevatorUp.triggered && !mag1.triggered) {
-                elevatorSpeed = 0.8
-
-                println("angle - " + elev2.connectedEncoder.angle)
-            }
-            else if (oi.elevatorDown.triggered && !mag2.triggered) {
-                elevatorSpeed = -0.8
-
-                println("angle - " + elev2.connectedEncoder.angle)
-            }
-            else {
-                elevatorSpeed =  0.0
-            }
-
-            elev1.speed = elevatorSpeed
-            elev2.speed = elevatorSpeed
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
         }
-
-        // Intake control code
-        if (intakeEnabled) {
-            when {
-                oi.intakeIn.triggered -> {
-                    intake1.speed = 1.0
-                    intake2.speed = 1.0
-                }
-                oi.intakeOut.triggered -> {
-                    intake1.speed = -1.0
-                    intake2.speed = -1.0
-                }
-                else -> {
-                    intake1.speed = 0.0
-                    intake2.speed = 0.0
-                }
-            }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
         }
-
-        //smooth linear accelerating
-        /*
-        var dV = oi.throttleAxis.value - currInputValue
-        if(dV > threshhold){
-            currInputValue += threshhold
-        }else{
-            currInputValue = oi.throttleAxis.value
-        }
-
-        dt.setDriveVelocity(currInputValue, currInputValue)
-        */
-
-        println("no")
     }
 
     override fun runTest() {
-        // rewind mechanism, run compressor, etc
+        // logging.update("psi", robot.pressureSensor.pressure)
 
-        /*
-        val turnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 15, "left")
+        while (this.isEnabled) {
+            /*if (oi.controlBoard.getButton(5).triggered) {
+                println("front extend")
+                robot.autoClimber.front.extend()
+            } else {
+                println("front retract")
+                robot.autoClimber.front.retract()
+            }
 
-        for (i in 0 until turnPath.size) {
-            println(turnPath[i])
+            if (oi.controlBoard.getButton(6).triggered) {
+                println("rear extend")
+                robot.autoClimber.rear.extend()
+            } else {
+                println("rear retract")
+                robot.autoClimber.rear.retract()
+            }*/
+
+            /*if (oi.controlBoard.getButton(1).triggered) { // front1
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("front1 extending")
+                    robot.autoClimber.front1.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.front1.retract()
+                }
+
+            }
+
+            if (oi.controlBoard.getButton(2).triggered) { // front2
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("front2 extending")
+                    robot.autoClimber.front2.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.front2.retract()
+                }
+            }
+
+            if (oi.controlBoard.getButton(3).triggered) { // rear1
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("rear1 extending")
+                    robot.autoClimber.rear1.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.rear1.retract()
+                }
+            }
+
+            if (oi.controlBoard.getButton(4).triggered) { // rear2
+                if (oi.controlBoard.getButton(5).triggered) {
+                    println("rear2 extending")
+                    robot.autoClimber.rear2.extend()
+                } else if (oi.controlBoard.getButton(6).triggered) {
+                    println("rear2 retracting")
+                    robot.autoClimber.rear2.retract()
+                }
+            }*/
+
+            // Logging
+            SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+            SmartDashboard.putData("PDP", PDP.pdp)
+
+            /*try {
+                logging.update("psi", robot.pressureSensor.pressure.toString())
+            }
+            catch (e: Exception) {
+                println("BIG BORK LOGGING BORKED!")
+                e.printStackTrace()
+            }*/
         }
-        */
-
-        /*
-        val MAX_LINVEL = 5.0
-        val MAX_LINACCEL = 3.5
-        val MAX_CENTRIPITAL = 3.5
-
-        val twoPointTurnPath = PathUtils.interpolateArcBetweenTwoPoints(Pose2DPathfinding(10.0, 0.0, 0.0), Pose2DPathfinding(15.0, 5.0, 90.0), 30, "left")
-        val pathCurvature = PathUtils.generateLinearPath(arrayOf(Triple(0.0, 0.0, 100000.0), *twoPointTurnPath, Triple(15.0, 20.0, 100000.0)/*, Pair(15.0, 15.0), Pair(0.0, 15.0), Pair(0.0, 5.0)/*Pair(0.0, 0.0), Pair(6.0, 0.0), Pair(7.0, 0.085), Pair(8.0, 0.35), Pair(9.0, 0.8), Pair(10.0, 1.53), Pair(11.0, 2.68), Pair(12.0, 6.0),Pair(12.0, 15.0)*/ */), 400)
-        val pathNoCurvature = PathUtils.removeCurvature(pathCurvature)
-
-        val length = pathNoCurvature.toList()
-            .zipWithNext { a, b -> TurtleMaths.distance(Pair(a.first, a.second), Pair(b.first, b.second)) }.sum()
-
-        val maxvel = pathCurvature.map { min(MAX_LINVEL, sqrt(it.third * MAX_CENTRIPITAL)) }
-
-
-        val (x, v) = PathUtils.generateVXGraph(length, maxvel.toTypedArray(), MAX_LINACCEL, 0.0, 0.0)
-        val (t, vz) = PathUtils.xvTotv(x, v)
-
-        velocities = v
-        times = t
-
-        for (i in 0 until t.size) {
-            println("TVZ ${t[i]}, ${vz[i]}")
-        }
-
-        val vTimed = PathUtils.consistentTime(t, vz, 0.02)
-        */
-
-        val auto = Auto(this, dt, odom, gyro, putToDashboard = true)
-
-        auto.followVisionLine()
-
     }
 
     override fun robotDisabled() {
-        dt.setDriveVelocity(0.0, 0.0)
-        println("dis")
+        robot.drivetrain.setDriveVelocity(0.0, 0.0)
+        println("Robot Disabled")
+
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
     }
 
     override fun disabledPeriodic() {
-        // LiveDashboard.putOdom(odom.pose)
+        // Communism
+
+        // Logging
+        SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
+        SmartDashboard.putData("PDP", PDP.pdp)
+
+        try {
+            logging.update("psi", robot.pressureSensor.pressure.toString())
+        }
+        catch (e: Exception) {
+            println("BIG BORK LOGGING BORKED!")
+            e.printStackTrace()
+        }
     }
 }
 

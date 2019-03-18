@@ -1,16 +1,9 @@
 package frc.team1458.lib.drive
 
 import frc.team1458.lib.actuator.SmartMotor
-import frc.team1458.lib.actuator.Solenoid
-import frc.team1458.lib.drive.util.AutoshiftHelper
-import frc.team1458.lib.drive.util.CheesyDriveHelper
 import frc.team1458.lib.pid.PIDConstants
 import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.sensor.interfaces.DistanceSensor
-import frc.team1458.lib.util.flow.systemTimeMillis
-import frc.team1458.lib.util.flow.systemTimeSeconds
-import java.lang.Math.abs
-import kotlin.math.abs
 
 
 class ClosedLoopTank(
@@ -20,13 +13,18 @@ class ClosedLoopTank(
                 val rightMotors: Array<SmartMotor> = arrayOf(),
 
                 // Closed Loop Control
-                var closedLoopControl: Boolean = false,
+                val closedLoopControl: Boolean = false,
                 wheelDiameter: Double? = null,
                 val closedLoopScaling: Double? = null,
                 val pidConstantsLeft: PIDConstants? = null,
                 val pidConstantsRight: PIDConstants? = null,
+                val gyro: AngleSensor? = null,
 
-                var gyro: AngleSensor? = null) {
+                // Current Limiting
+                private var currentLimitingEnabled: Boolean = false,
+                private val currentLimitMax: Int = 20,
+                private val currentLimitContinuous: Int = currentLimitMax,
+                private val currentLimitTimeMs: Int = 100) {
 
     val wheelCircumference = wheelDiameter?.times(Math.PI)
 
@@ -85,6 +83,34 @@ class ClosedLoopTank(
 
         leftMaster.PIDconstants = pidConstantsLeft ?: PIDConstants.DISABLE
         rightMaster.PIDconstants = pidConstantsRight ?: PIDConstants.DISABLE
+
+        // Current Limiting
+        if (currentLimitingEnabled) {
+            leftMaster._talonInstance!!.configContinuousCurrentLimit(currentLimitContinuous, 0)
+            leftMaster._talonInstance!!.configPeakCurrentLimit(currentLimitMax, 0)
+            leftMaster._talonInstance!!.configPeakCurrentDuration(currentLimitTimeMs, 0)
+            leftMaster._talonInstance!!.enableCurrentLimit(true)
+
+            rightMaster._talonInstance!!.configContinuousCurrentLimit(currentLimitContinuous, 0)
+            rightMaster._talonInstance!!.configPeakCurrentLimit(currentLimitMax, 0)
+            rightMaster._talonInstance!!.configPeakCurrentDuration(currentLimitTimeMs, 0)
+            rightMaster._talonInstance!!.enableCurrentLimit(true)
+
+            for (motor: SmartMotor in leftMotors) {
+                motor._talonInstance!!.configContinuousCurrentLimit(currentLimitContinuous, 0)
+                motor._talonInstance!!.configPeakCurrentLimit(currentLimitMax, 0)
+                motor._talonInstance!!.configPeakCurrentDuration(currentLimitTimeMs, 0)
+                motor._talonInstance!!.enableCurrentLimit(true)
+            }
+
+            for (motor: SmartMotor in rightMotors) {
+                motor._talonInstance!!.configContinuousCurrentLimit(currentLimitContinuous, 0)
+                motor._talonInstance!!.configPeakCurrentLimit(currentLimitMax, 0)
+                motor._talonInstance!!.configPeakCurrentDuration(currentLimitTimeMs, 0)
+                motor._talonInstance!!.enableCurrentLimit(true)
+            }
+        }
+
     }
 
     fun setDriveVelocity(left: Double, right: Double) {
@@ -103,6 +129,7 @@ class ClosedLoopTank(
     fun setRawDrive(left: Double, right: Double) {
         leftTarget = left
         rightTarget = right
+
 
         leftMaster.speed = leftTarget
         rightMaster.speed = rightTarget
