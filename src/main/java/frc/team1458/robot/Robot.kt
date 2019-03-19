@@ -224,78 +224,9 @@ class Robot : BaseRobot() {
     }
 
     override fun runTest() {
-        // logging.update("psi", robot.pressureSensor.pressure)
-
-        while (this.isEnabled) {
-            /*if (oi.controlBoard.getButton(5).triggered) {
-                println("front extend")
-                robot.autoClimber.front.extend()
-            } else {
-                println("front retract")
-                robot.autoClimber.front.retract()
-            }
-
-            if (oi.controlBoard.getButton(6).triggered) {
-                println("rear extend")
-                robot.autoClimber.rear.extend()
-            } else {
-                println("rear retract")
-                robot.autoClimber.rear.retract()
-            }*/
-
-            /*if (oi.controlBoard.getButton(1).triggered) { // front1
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("front1 extending")
-                    robot.autoClimber.front1.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.front1.retract()
-                }
-
-            }
-
-            if (oi.controlBoard.getButton(2).triggered) { // front2
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("front2 extending")
-                    robot.autoClimber.front2.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.front2.retract()
-                }
-            }
-
-            if (oi.controlBoard.getButton(3).triggered) { // rear1
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("rear1 extending")
-                    robot.autoClimber.rear1.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.rear1.retract()
-                }
-            }
-
-            if (oi.controlBoard.getButton(4).triggered) { // rear2
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("rear2 extending")
-                    robot.autoClimber.rear2.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.rear2.retract()
-                }
-            }*/
-
-            // Logging
-            SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
-            SmartDashboard.putData("PDP", PDP.pdp)
-
-            /*try {
-                logging.update("psi", robot.pressureSensor.pressure.toString())
-            }
-            catch (e: Exception) {
-                println("BIG BORK LOGGING BORKED!")
-                e.printStackTrace()
-            }*/
-        }
+        robot.climber.resetClimb()
+        robot.compressor.start()
+        
     }
 
     override fun robotDisabled() {
