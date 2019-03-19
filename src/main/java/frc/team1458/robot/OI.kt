@@ -2,13 +2,13 @@ package frc.team1458.robot
 
 import frc.team1458.lib.input.FlightStick
 import frc.team1458.lib.input.Gamepad
+import frc.team1458.lib.input.interfaces.POV
 import frc.team1458.lib.input.interfaces.Switch
 
 class OI {
     private val leftStick: FlightStick = FlightStick.flightStick(1)
     private val rightStick: FlightStick = FlightStick.flightStick(0)
 
-    // TODO check if inversion/scaleador
     var steerAxis = leftStick.rollAxis.scale(0.5)
     var throttleAxis = rightStick.pitchAxis.inverted
 
@@ -16,21 +16,25 @@ class OI {
     val forwardLineButton = rightStick.getButton(2)
     val reverseButton = rightStick.getButton(4)
 
+    val defenseButton = leftStick.getButton(2)
+    val disableSafetyButton = leftStick.getButton(4)
+
     val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
     val visionFollowButton = rightStick.trigger // actually follows drivetrain
 
-    private val controlBoard = Gamepad.xboxController(2) // not really an xbox controller - the new button panel
+    private val controlBoard = Gamepad.xboxController(2)
 
-    // TODO unbork pls
-    val intakeForwardButton = controlBoard.getButton(5)
-    val intakeReverseButton = controlBoard.getButton(6)
+    val intakeForwardButton = controlBoard.getButton(Gamepad.Button.RBUMP)
+    val intakeReverseButton = controlBoard.getButton(Gamepad.Button.LBUMP)
     val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
 
-    val hatchUpDownSwitch = Switch.toggleSwitch(controlBoard.getButton(3)) // make this ONLY toggle switch if you use xbox controller, else not toggle switch
-    val hatchGrab = controlBoard.getButton(1)
-    val hatchRelease = controlBoard.getButton(2)
+    val hatchUpDownSwitch = Switch.doubleToggle(Switch.fromPOV(controlBoard.getPOV(), POV.Direction.SOUTH),
+            Switch.fromPOV(controlBoard.getPOV(), POV.Direction.NORTH)) // TODO - IF THIS ONE IS BACKWARDS, SWAP THE SOUTH AND THE NORTH ----- DAVIS DAY 1
 
-    val climb1 = controlBoard.getButton(4)
-    val climb2 = controlBoard.getButton(5)
-    val climb3 = controlBoard.getButton(6)
+    val hatchGrab = controlBoard.getButton(Gamepad.Button.A)
+    val hatchRelease = controlBoard.getButton(Gamepad.Button.B)
+
+    val climb1 = rightStick.getButton(12) // TODO CHANGE THIS TO ONE OF THE BUTTONS ON THE BASE OF THE STICK ----- DAVIS DAY 1
+    val climb2 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.WEST)
+    val climb3 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.EAST)
 }

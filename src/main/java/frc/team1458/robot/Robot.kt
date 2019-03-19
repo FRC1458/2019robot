@@ -122,9 +122,9 @@ class Robot : BaseRobot() {
 
         // hatch intake
         if (oi.hatchUpDownSwitch.triggered) {
-            robot.hatchIntake.up()
-        } else {
             robot.hatchIntake.down()
+        } else {
+            robot.hatchIntake.up()
         }
 
         if (oi.hatchGrab.triggered) {
@@ -133,6 +133,15 @@ class Robot : BaseRobot() {
             robot.hatchIntake.release()
         }
 
+        // used for "yeeting" the robot to the second level HAB
+        // TODO comment this whole block out if it breaks anything ----- DAVIS DAY 1
+        if (oi.disableSafetyButton.triggered) {
+            robot.drivetrain.disableCurrentLimit()
+        } else {
+            robot.drivetrain.enableCurrentLimit()
+        }
+
+        VisionTable.defense_timer!!.setBoolean(oi.defenseButton.triggered) // TODO of all things, this shouldn't break, but comment it out if it does ----- DAVIS DAY 1
 
         // climby climby
         if (oi.climb1.triggered) {
@@ -198,10 +207,13 @@ class Robot : BaseRobot() {
             )
         }
 
+        VisionTable.pressure!!.setDouble(robot.pressureSensor.pressure) // TODO comment out if breaking something ----- DAVIS DAY 1
+
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
+        // TODO comment out the next 7 lines if it breaks something (although these were used with success previously)  ----- DAVIS DAY 1
         try {
             logging.update("psi", robot.pressureSensor.pressure.toString())
         }

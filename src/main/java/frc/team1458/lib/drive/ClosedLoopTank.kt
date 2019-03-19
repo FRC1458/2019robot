@@ -113,6 +113,42 @@ class ClosedLoopTank(
 
     }
 
+    var notEnabled = false
+
+    fun enableCurrentLimit() {
+        if (currentLimitingEnabled && notEnabled) {
+            leftMaster._talonInstance!!.enableCurrentLimit(true)
+            rightMaster._talonInstance!!.enableCurrentLimit(true)
+
+            for (motor: SmartMotor in leftMotors) {
+                motor._talonInstance!!.enableCurrentLimit(true)
+            }
+
+            for (motor: SmartMotor in rightMotors) {
+                motor._talonInstance!!.enableCurrentLimit(true)
+            }
+
+            notEnabled = false
+        }
+    }
+
+    fun disableCurrentLimit() {
+        if (currentLimitingEnabled && !notEnabled) {
+            leftMaster._talonInstance!!.enableCurrentLimit(false)
+            rightMaster._talonInstance!!.enableCurrentLimit(false)
+
+            for (motor: SmartMotor in leftMotors) {
+                motor._talonInstance!!.enableCurrentLimit(false)
+            }
+
+            for (motor: SmartMotor in rightMotors) {
+                motor._talonInstance!!.enableCurrentLimit(false)
+            }
+
+            notEnabled = true
+        }
+    }
+
     fun setDriveVelocity(left: Double, right: Double) {
         if(wheelCircumference != null) {
             leftTarget = left * (360.0 / wheelCircumference)

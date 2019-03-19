@@ -11,6 +11,9 @@ object VisionTable {
     var horizOffset : NetworkTableEntry? = null
     var angleOffset : NetworkTableEntry? = null
 
+    var pressure : NetworkTableEntry? = null
+    var defense_timer : NetworkTableEntry? = null
+
     fun setup() {
         val table = NetworkTableInstance.getDefault().getTable("VisionTable")
         camera = table.getEntry("current_camera")
@@ -19,6 +22,9 @@ object VisionTable {
 
         horizOffset = table.getEntry("horiz_offset")
         angleOffset = table.getEntry("angle_offset")
+
+        pressure = table.getEntry("pressure_psi")
+        defense_timer = table.getEntry("defense_timer")
     }
 
 }
