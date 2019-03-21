@@ -22,6 +22,15 @@ class ManualClimber(val regulator: Solenoid, val front: Solenoid, val rear: Sole
         motor._talonInstance!!.configPeakCurrentDuration(300, 0)
         motor._talonInstance!!.enableCurrentLimit(true)*/
     }
+    
+    fun resetClimb() {
+        front.retract()
+        rear.retract()
+
+        delay(250)
+
+        regulator.extend()
+    }
 
     fun update(speed: Double) {
         if(rearExtended) {

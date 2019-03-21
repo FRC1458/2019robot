@@ -122,9 +122,9 @@ class Robot : BaseRobot() {
 
         // hatch intake
         if (oi.hatchUpDownSwitch.triggered) {
-            robot.hatchIntake.up()
-        } else {
             robot.hatchIntake.down()
+        } else {
+            robot.hatchIntake.up()
         }
 
         if (oi.hatchGrab.triggered) {
@@ -133,6 +133,15 @@ class Robot : BaseRobot() {
             robot.hatchIntake.release()
         }
 
+        // used for "yeeting" the robot to the second level HAB
+        // TODO comment this whole block out if it breaks anything ----- DAVIS DAY 1
+        if (oi.disableSafetyButton.triggered) {
+            robot.drivetrain.disableCurrentLimit()
+        } else {
+            robot.drivetrain.enableCurrentLimit()
+        }
+
+        VisionTable.defense_timer!!.setBoolean(oi.defenseButton.triggered) // TODO of all things, this shouldn't break, but comment it out if it does ----- DAVIS DAY 1
 
         // climby climby
         if (oi.climb1.triggered) {
@@ -198,10 +207,13 @@ class Robot : BaseRobot() {
             )
         }
 
+        VisionTable.pressure!!.setDouble(robot.pressureSensor.pressure) // TODO comment out if breaking something ----- DAVIS DAY 1
+
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
+        // TODO comment out the next 7 lines if it breaks something (although these were used with success previously)  ----- DAVIS DAY 1
         try {
             logging.update("psi", robot.pressureSensor.pressure.toString())
         }
@@ -212,78 +224,9 @@ class Robot : BaseRobot() {
     }
 
     override fun runTest() {
-        // logging.update("psi", robot.pressureSensor.pressure)
-
-        while (this.isEnabled) {
-            /*if (oi.controlBoard.getButton(5).triggered) {
-                println("front extend")
-                robot.autoClimber.front.extend()
-            } else {
-                println("front retract")
-                robot.autoClimber.front.retract()
-            }
-
-            if (oi.controlBoard.getButton(6).triggered) {
-                println("rear extend")
-                robot.autoClimber.rear.extend()
-            } else {
-                println("rear retract")
-                robot.autoClimber.rear.retract()
-            }*/
-
-            /*if (oi.controlBoard.getButton(1).triggered) { // front1
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("front1 extending")
-                    robot.autoClimber.front1.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.front1.retract()
-                }
-
-            }
-
-            if (oi.controlBoard.getButton(2).triggered) { // front2
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("front2 extending")
-                    robot.autoClimber.front2.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.front2.retract()
-                }
-            }
-
-            if (oi.controlBoard.getButton(3).triggered) { // rear1
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("rear1 extending")
-                    robot.autoClimber.rear1.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.rear1.retract()
-                }
-            }
-
-            if (oi.controlBoard.getButton(4).triggered) { // rear2
-                if (oi.controlBoard.getButton(5).triggered) {
-                    println("rear2 extending")
-                    robot.autoClimber.rear2.extend()
-                } else if (oi.controlBoard.getButton(6).triggered) {
-                    println("rear2 retracting")
-                    robot.autoClimber.rear2.retract()
-                }
-            }*/
-
-            // Logging
-            SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
-            SmartDashboard.putData("PDP", PDP.pdp)
-
-            /*try {
-                logging.update("psi", robot.pressureSensor.pressure.toString())
-            }
-            catch (e: Exception) {
-                println("BIG BORK LOGGING BORKED!")
-                e.printStackTrace()
-            }*/
-        }
+        robot.climber.resetClimb()
+        robot.compressor.start()
+        
     }
 
     override fun robotDisabled() {

@@ -55,6 +55,13 @@ interface Switch : DigitalInput {
             return create { toggle }
         }
 
+        fun doubleToggle(switchOn: Switch, switchOff: Switch) : Switch {
+            var toggle = false
+            SwitchReactor.onTriggered(switchOn, { toggle = true })
+            SwitchReactor.onTriggered(switchOff, { toggle = false })
+            return create { toggle }
+        }
+
         fun fromPOV(pov: POV, direction: POV.Direction) : Switch {
             return create { pov.direction == direction }
         }
