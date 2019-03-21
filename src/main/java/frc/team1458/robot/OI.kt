@@ -34,7 +34,7 @@ class OI {
     val hatchGrab = controlBoard.getButton(Gamepad.Button.A)
     val hatchRelease = controlBoard.getButton(Gamepad.Button.B)
 
-    val climb1 = rightStick.getButton(12) // TODO CHANGE THIS TO ONE OF THE BUTTONS ON THE BASE OF THE STICK ----- DAVIS DAY 1
+    val climb1 = rightStick.getButton(10) // TODO CHANGE THIS TO ONE OF THE BUTTONS ON THE BASE OF THE STICK ----- DAVIS DAY 1
     val climb2 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.WEST)
     val climb3 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.EAST)
 }
