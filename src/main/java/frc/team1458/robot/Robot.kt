@@ -214,13 +214,7 @@ class Robot : BaseRobot() {
         SmartDashboard.putData("PDP", PDP.pdp)
 
         // TODO comment out the next 7 lines if it breaks something (although these were used with success previously)  ----- DAVIS DAY 1
-        try {
-            logging.update("psi", robot.pressureSensor.pressure.toString())
-        }
-        catch (e: Exception) {
-            println("BIG BORK LOGGING BORKED!")
-            e.printStackTrace()
-        }
+
     }
 
     override fun runTest() {
@@ -237,13 +231,7 @@ class Robot : BaseRobot() {
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        try {
-            logging.update("psi", robot.pressureSensor.pressure.toString())
-        }
-        catch (e: Exception) {
-            println("BIG BORK LOGGING BORKED!")
-            e.printStackTrace()
-        }
+
     }
 
     override fun disabledPeriodic() {
@@ -253,13 +241,7 @@ class Robot : BaseRobot() {
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        try {
-            logging.update("psi", robot.pressureSensor.pressure.toString())
-        }
-        catch (e: Exception) {
-            println("BIG BORK LOGGING BORKED!")
-            e.printStackTrace()
-        }
+
     }
 }
 
