@@ -10,7 +10,7 @@ class OI {
     private val rightStick: FlightStick = FlightStick.flightStick(0)
 
     var steerAxis = leftStick.rollAxis.scale(0.5)
-    var throttleAxis = rightStick.pitchAxis.inverted
+    var throttleAxis = rightStick.pitchAxis.inverted.scale(0.6)
 
     val forwardButton = rightStick.getButton(3)
     val forwardLineButton = rightStick.getButton(2)

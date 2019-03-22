@@ -27,7 +27,7 @@ class RobotMap {
     val compressor = Compressor(PCMcanID = 0)
     val pressureSensor = AnalogPressureSensor(1)
 
-    val intake = Intake(motor = SmartMotor.CANtalonSRX(11), speedFwd = 0.6, speedRev = -0.4, speedPanic = 1.0)
+    val intake = Intake(motor = SmartMotor.CANtalonSRX(11), speedFwd = 0.8, speedRev = -0.4, speedPanic = 1.0)
 
     val hatchIntake = HatchIntake(upDown = Solenoid.doubleSolenoid(PCMcanID = 0, extendChannel = 1, retractChannel = 0),
                                      openClose = Solenoid.doubleSolenoid(PCMcanID = 0, extendChannel = 4, retractChannel = 5))
