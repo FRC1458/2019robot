@@ -25,8 +25,8 @@ class Robot : BaseRobot() {
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        SmartDashboard.putNumber("kP", 0.35)
-        SmartDashboard.putNumber("kD", -0.2)
+        SmartDashboard.putNumber("kP", 0.55)
+        SmartDashboard.putNumber("kD", -0.3)
 
         val LIMIT_MAX = 20
         val LIMIT_CONT = LIMIT_MAX
@@ -170,8 +170,8 @@ class Robot : BaseRobot() {
 
         if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
 
-            val x = SmartDashboard.getNumber("kP", 0.35)
-            val y = SmartDashboard.getNumber("kD", -0.2)
+            val x = SmartDashboard.getNumber("kP", 0.55)
+            val y = SmartDashboard.getNumber("kD", -0.3)
 
             val (kP, kD) = arrayOf(
                 Pair(x, y), // front vision camera
