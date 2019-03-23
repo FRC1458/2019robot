@@ -32,6 +32,7 @@ class Robot : BaseRobot() {
         val LIMIT_CONT = LIMIT_MAX
         val TIME = 100
 
+        /* Redundant (done in closed loop tank)
         robot.drivetrain.leftMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
         robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
         robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
@@ -51,7 +52,9 @@ class Robot : BaseRobot() {
         robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
         robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
         robot.drivetrain.rightMotors[0]._talonInstance!!.enableCurrentLimit(true)
+        */
 
+        /* Borken Logging stuff
         try {
             logging.setup(logDirectory = "/home/lvuser/logs/", keys = arrayOf("psi"))
             logging.start()
@@ -60,6 +63,7 @@ class Robot : BaseRobot() {
             println("BIG BORK LOGGING BORKED!")
             e.printStackTrace()
         }
+        */
 
     }
 
@@ -116,9 +120,6 @@ class Robot : BaseRobot() {
             oi.intakePanicButton.triggered -> robot.intake.panic()
             else -> robot.intake.stop()
         }
-
-
-
 
         // hatch intake
         if (oi.hatchUpDownSwitch.triggered) {

@@ -2,6 +2,7 @@ package frc.team1458.robot
 
 import frc.team1458.lib.actuator.SmartMotor
 import frc.team1458.lib.actuator.Solenoid
+import frc.team1458.lib.sensor.interfaces.AngleSensor
 import frc.team1458.lib.util.flow.delay
 
 class ManualClimber(val regulator: Solenoid, val front: Solenoid, val rear: Solenoid, val motor: SmartMotor) {
