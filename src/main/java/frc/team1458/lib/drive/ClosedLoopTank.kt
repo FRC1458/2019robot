@@ -153,15 +153,15 @@ class ClosedLoopTank(
 
     fun enableRamp() {
         if(!rampEnabled) {
-            leftMaster._talonInstance!!.setVoltageRampRate(8)
-            rightMaster._talonInstance!!.setVoltageRampRate(8)
+            leftMaster._talonInstance!!.configOpenloopRamp(1.5, 50)
+            rightMaster._talonInstance!!.configOpenloopRamp(1.5, 50)
 
             for (motor: SmartMotor in leftMotors) {
-                motor._talonInstance!!.setVoltageRampRate(8)
+                motor._talonInstance!!.configOpenloopRamp(1.5, 50)
             }
 
             for (motor: SmartMotor in rightMotors) {
-                motor._talonInstance!!.setVoltageRampRate(8)
+                motor._talonInstance!!.configOpenloopRamp(1.5, 50)
             }
             
             rampEnabled = true
@@ -170,15 +170,15 @@ class ClosedLoopTank(
 
     fun disableRamp() {
         if(rampEnabled) {
-            leftMaster._talonInstance!!.setVoltageRampRate(0)
-            rightMaster._talonInstance!!.setVoltageRampRate(0)
+            leftMaster._talonInstance!!.configOpenloopRamp(0.0, 50)
+            rightMaster._talonInstance!!.configOpenloopRamp(0.0, 50)
 
             for (motor: SmartMotor in leftMotors) {
-                motor._talonInstance!!.setVoltageRampRate(0)
+                motor._talonInstance!!.configOpenloopRamp(0.0, 50)
             }
 
             for (motor: SmartMotor in rightMotors) {
-                motor._talonInstance!!.setVoltageRampRate(0)
+                motor._talonInstance!!.configOpenloopRamp(0.0, 50)
             }
             
             rampEnabled = false
