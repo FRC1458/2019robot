@@ -149,6 +149,42 @@ class ClosedLoopTank(
         }
     }
 
+    var rampEnabled = false
+
+    fun enableRamp() {
+        if(!rampEnabled) {
+            leftMaster._talonInstance!!.setVoltageRampRate(8)
+            rightMaster._talonInstance!!.setVoltageRampRate(8)
+
+            for (motor: SmartMotor in leftMotors) {
+                motor._talonInstance!!.setVoltageRampRate(8)
+            }
+
+            for (motor: SmartMotor in rightMotors) {
+                motor._talonInstance!!.setVoltageRampRate(8)
+            }
+            
+            rampEnabled = true
+        }
+    }
+
+    fun disableRamp() {
+        if(rampEnabled) {
+            leftMaster._talonInstance!!.setVoltageRampRate(0)
+            rightMaster._talonInstance!!.setVoltageRampRate(0)
+
+            for (motor: SmartMotor in leftMotors) {
+                motor._talonInstance!!.setVoltageRampRate(0)
+            }
+
+            for (motor: SmartMotor in rightMotors) {
+                motor._talonInstance!!.setVoltageRampRate(0)
+            }
+            
+            rampEnabled = false
+        }
+    }
+
     fun setDriveVelocity(left: Double, right: Double) {
         if(wheelCircumference != null) {
             leftTarget = left * (360.0 / wheelCircumference)

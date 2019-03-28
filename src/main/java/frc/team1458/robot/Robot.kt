@@ -141,6 +141,12 @@ class Robot : BaseRobot() {
             robot.drivetrain.enableCurrentLimit()
         }
 
+        if (oi.pushingButton.triggered) {
+            robot.drivetrain.enableRamp()
+        } else {
+            robot.drivetrain.disableRamp()
+        }
+
         VisionTable.defense_timer!!.setBoolean(oi.defenseButton.triggered) // TODO of all things, this shouldn't break, but comment it out if it does ----- DAVIS DAY 1
 
         // climby climby
@@ -201,19 +207,18 @@ class Robot : BaseRobot() {
                 if (drivetrainReversed) {
                     -oi.throttleAxis.value
                 } else {
-                    oi.throttleAxis.value
+                    if(oi.disableSafetyButton.triggered) { 1.6 * oi.throttleAxis.value } else { oi.throttleAxis.value }
                 },
                 oi.steerAxis.value
             )
         }
 
-        VisionTable.pressure!!.setDouble(robot.pressureSensor.pressure) // TODO comment out if breaking something ----- DAVIS DAY 1
+        VisionTable.pressure!!.setDouble(robot.pressureSensor.pressure)
 
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        // TODO comment out the next 7 lines if it breaks something (although these were used with success previously)  ----- DAVIS DAY 1
 
     }
 
