@@ -9,15 +9,18 @@ class OI {
     private val leftStick: FlightStick = FlightStick.flightStick(1)
     private val rightStick: FlightStick = FlightStick.flightStick(0)
 
-    var steerAxis = leftStick.rollAxis.scale(0.5)
+    var steerAxis = leftStick.rollAxis.scale(0.35)
     var throttleAxis = rightStick.pitchAxis.inverted.scale(0.6)
 
     val forwardButton = rightStick.getButton(3)
     val forwardLineButton = rightStick.getButton(2)
     val reverseButton = rightStick.getButton(4)
 
-    val defenseButton = leftStick.getButton(2)
-    val disableSafetyButton = leftStick.getButton(4)
+    val defenseButton = Switch.ALWAYS_OFF
+
+    val pushingButton = leftStick.getButton(2) // limit acceleration but no torque limit
+
+    val disableSafetyButton = leftStick.getButton(4).or(pushingButton) // no speed and no torque limit
 
     val visionEnableButton = rightStick.trigger.or(leftStick.trigger) // prepares / starts vision
     val visionFollowButton = rightStick.trigger // actually follows drivetrain
@@ -26,15 +29,15 @@ class OI {
 
     val intakeForwardButton = controlBoard.getButton(Gamepad.Button.RBUMP)
     val intakeReverseButton = controlBoard.getButton(Gamepad.Button.LBUMP)
-    val intakePanicButton = Switch.ALWAYS_OFF // leftStick.getButton(13)
+    val intakePanicButton = Switch.ALWAYS_OFF
 
     val hatchUpDownSwitch = Switch.doubleToggle(Switch.fromPOV(controlBoard.getPOV(), POV.Direction.SOUTH),
-            Switch.fromPOV(controlBoard.getPOV(), POV.Direction.NORTH)) // TODO - IF THIS ONE IS BACKWARDS, SWAP THE SOUTH AND THE NORTH ----- DAVIS DAY 1
+            Switch.fromPOV(controlBoard.getPOV(), POV.Direction.NORTH))
 
     val hatchGrab = controlBoard.getButton(Gamepad.Button.A)
     val hatchRelease = controlBoard.getButton(Gamepad.Button.B)
 
-    val climb1 = rightStick.getButton(10) // TODO CHANGE THIS TO ONE OF THE BUTTONS ON THE BASE OF THE STICK ----- DAVIS DAY 1
+    val climb1 = rightStick.getButton(10) 
     val climb2 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.WEST)
     val climb3 = Switch.fromPOV(controlBoard.getPOV(), POV.Direction.EAST)
 }
