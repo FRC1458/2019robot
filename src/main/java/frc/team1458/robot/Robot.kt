@@ -20,6 +20,7 @@ class Robot : BaseRobot() {
 
     override fun robotSetup() {
         VisionTable.setup()
+        
 
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
@@ -169,9 +170,11 @@ class Robot : BaseRobot() {
 
         if (oi.visionEnableButton.triggered) {
             VisionTable.visionEnable!!.setBoolean(true)
+            VisionTable.ll_mode!!.setNumber(0) // vision
         } else {
             VisionTable.visionReady!!.setBoolean(false)
             VisionTable.visionEnable!!.setBoolean(false)
+            VisionTable.ll_mode!!.setNumber(1) // driver cam
         }
 
         if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
@@ -184,6 +187,9 @@ class Robot : BaseRobot() {
                 Pair(x, y), // front downward-facing
                 Pair(x, y) // rear (cargo target)
             )[camera]
+
+
+            // TODO, switch to "tx" if using limelight (divide by 27.0) only use "tx" if "tv" = 1, else there is no targets
 
             val offset = VisionTable.horizOffset!!.getDouble(0.0)
 

@@ -13,7 +13,7 @@ class OI {
     var throttleAxis = rightStick.pitchAxis.inverted.scale(0.6)
 
     val forwardButton = rightStick.getButton(3)
-    val forwardLineButton = rightStick.getButton(2)
+    val forwardLineButton = Switch.ALWAYS_OFF // rightStick.getButton(2)
     val reverseButton = rightStick.getButton(4)
 
     val defenseButton = Switch.ALWAYS_OFF
