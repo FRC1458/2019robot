@@ -21,9 +21,9 @@ class Robot : BaseRobot() {
     override fun robotSetup() {
         VisionTable.setup()
         
-        VisionTable.ll_mode!!.putNumber(0)
-        VisionTable.ll_pipeline!!.putNumber(1)
-        VisionTable.ll_stream!!.putNumber(1)
+        VisionTable.ll_mode!!.setNumber(0)
+        VisionTable.ll_pipeline!!.setNumber(1)
+        VisionTable.ll_stream!!.setNumber(1)
 
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
@@ -97,17 +97,17 @@ class Robot : BaseRobot() {
         // check if need to reverse DT
             drivetrainReversed = false
             camera = 0
-            VisionTable.ll_stream!!.putNumber(1)
+            VisionTable.ll_stream!!.setNumber(1)
             println(camera)
         } else if (oi.forwardLineButton.triggered) { // front downward-facing
             drivetrainReversed = false
             camera = 1
-            VisionTable.ll_stream!!.putNumber(1)
+            VisionTable.ll_stream!!.setNumber(1)
             println(camera)
         } else if (oi.reverseButton.triggered) { // rear (cargo target)
             drivetrainReversed = true
             camera = 2
-            VisionTable.ll_stream!!.putNumber(2)
+            VisionTable.ll_stream!!.setNumber(2)
             println(camera)
         }
 
@@ -166,22 +166,22 @@ class Robot : BaseRobot() {
 
         // switch the pipeline big bork in the cloud
         if(oi.pipeLoadingStation.triggered) {
-            VisionTable.ll_mode!!.putNumber(0)
-            VisionTable.ll_pipeline!!.putNumber(0)
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(0)
         }
 
         if(oi.pipeLeft.triggered) {
-            VisionTable.ll_mode!!.putNumber(0)
-            VisionTable.ll_pipeline!!.putNumber(1)
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(1)
         }
 
         if(oi.pipeRight.triggered) {
-            VisionTable.ll_mode!!.putNumber(0)
-            VisionTable.ll_pipeline!!.putNumber(2)
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(2)
         }
 
         if(oi.pipeNone.triggered) {
-            VisionTable.ll_mode!!.putNumber(1)
+            VisionTable.ll_mode!!.setNumber(1)
         }
 
 
