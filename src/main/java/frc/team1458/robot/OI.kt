@@ -6,8 +6,8 @@ import frc.team1458.lib.input.interfaces.POV
 import frc.team1458.lib.input.interfaces.Switch
 
 class OI {
-    private val leftStick: FlightStick = FlightStick.flightStick(1)
-    private val rightStick: FlightStick = FlightStick.flightStick(0)
+    val leftStick: FlightStick = FlightStick.flightStick(1)
+    val rightStick: FlightStick = FlightStick.flightStick(0)
 
     var steerAxis = leftStick.rollAxis.scale(0.35)
     var throttleAxis = rightStick.pitchAxis.inverted.scale(0.6)

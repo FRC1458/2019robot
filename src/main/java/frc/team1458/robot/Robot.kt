@@ -95,6 +95,7 @@ class Robot : BaseRobot() {
     override fun teleopPeriodic() {
 
         // check if need to reverse DT
+        if (oi.forwardButton.triggered) {
             drivetrainReversed = false
             camera = 0
             VisionTable.ll_stream!!.setNumber(1)
@@ -230,9 +231,19 @@ class Robot : BaseRobot() {
     }
 
     override fun runTest() {
-        robot.climber.resetClimb()
+        //robot.climber.resetClimb()
         robot.compressor.start()
-        
+
+        val ax = oi.leftStick.getAxis(3)
+
+        while(isEnabled && isTest) {
+            val DUTY = 100
+            val x = DUTY * ((ax.value + 1.0) / 2.0)
+            robot.hatchIntake.up()
+            delay(x)
+            robot.hatchIntake.down()
+            delay(DUTY - x)
+        }
     }
 
     override fun robotDisabled() {
