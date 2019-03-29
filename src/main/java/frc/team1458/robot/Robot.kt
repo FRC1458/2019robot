@@ -20,6 +20,10 @@ class Robot : BaseRobot() {
 
     override fun robotSetup() {
         VisionTable.setup()
+        
+        VisionTable.ll_mode!!.setNumber(0)
+        VisionTable.ll_pipeline!!.setNumber(1)
+        VisionTable.ll_stream!!.setNumber(1)
 
         // Logging
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
@@ -32,7 +36,6 @@ class Robot : BaseRobot() {
         val LIMIT_CONT = LIMIT_MAX
         val TIME = 100
 
-        /* Redundant (done in closed loop tank)
         robot.drivetrain.leftMaster._talonInstance!!.configContinuousCurrentLimit(LIMIT_CONT, 0)
         robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
         robot.drivetrain.leftMaster._talonInstance!!.configPeakCurrentDuration(TIME, 0)
@@ -52,9 +55,7 @@ class Robot : BaseRobot() {
         robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentLimit(LIMIT_MAX, 0)
         robot.drivetrain.rightMotors[0]._talonInstance!!.configPeakCurrentDuration(TIME, 0)
         robot.drivetrain.rightMotors[0]._talonInstance!!.enableCurrentLimit(true)
-        */
 
-        /* Borken Logging stuff
         try {
             logging.setup(logDirectory = "/home/lvuser/logs/", keys = arrayOf("psi"))
             logging.start()
@@ -63,7 +64,6 @@ class Robot : BaseRobot() {
             println("BIG BORK LOGGING BORKED!")
             e.printStackTrace()
         }
-        */
 
     }
 
@@ -95,20 +95,19 @@ class Robot : BaseRobot() {
     override fun teleopPeriodic() {
 
         // check if need to reverse DT
-        if (oi.forwardButton.triggered) { // front vision camera
             drivetrainReversed = false
             camera = 0
-            VisionTable.camera!!.setDouble(camera.toDouble())
+            VisionTable.ll_stream!!.setNumber(1)
             println(camera)
         } else if (oi.forwardLineButton.triggered) { // front downward-facing
             drivetrainReversed = false
             camera = 1
-            VisionTable.camera!!.setDouble(camera.toDouble())
+            VisionTable.ll_stream!!.setNumber(1)
             println(camera)
         } else if (oi.reverseButton.triggered) { // rear (cargo target)
             drivetrainReversed = true
             camera = 2
-            VisionTable.camera!!.setDouble(camera.toDouble())
+            VisionTable.ll_stream!!.setNumber(2)
             println(camera)
         }
 
@@ -120,6 +119,7 @@ class Robot : BaseRobot() {
             oi.intakePanicButton.triggered -> robot.intake.panic()
             else -> robot.intake.stop()
         }
+
 
         // hatch intake
         if (oi.hatchUpDownSwitch.triggered) {
@@ -135,7 +135,6 @@ class Robot : BaseRobot() {
         }
 
         // used for "yeeting" the robot to the second level HAB
-        // TODO comment this whole block out if it breaks anything ----- DAVIS DAY 1
         if (oi.disableSafetyButton.triggered) {
             robot.drivetrain.disableCurrentLimit()
         } else {
@@ -147,8 +146,6 @@ class Robot : BaseRobot() {
         } else {
             robot.drivetrain.disableRamp()
         }
-
-        VisionTable.defense_timer!!.setBoolean(oi.defenseButton.triggered) // TODO of all things, this shouldn't break, but comment it out if it does ----- DAVIS DAY 1
 
         // climby climby
         if (oi.climb1.triggered) {
@@ -167,26 +164,35 @@ class Robot : BaseRobot() {
         robot.climber.update(oi.throttleAxis.value)
 
 
-
-        if (oi.visionEnableButton.triggered) {
-            VisionTable.visionEnable!!.setBoolean(true)
-        } else {
-            VisionTable.visionReady!!.setBoolean(false)
-            VisionTable.visionEnable!!.setBoolean(false)
+        // switch the pipeline big bork in the cloud
+        if(oi.pipeLoadingStation.triggered) {
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(0)
         }
 
-        if (oi.visionFollowButton.triggered && (VisionTable.visionReady!!.getBoolean(false) == true)) {
+        if(oi.pipeLeft.triggered) {
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(1)
+        }
 
-            val x = SmartDashboard.getNumber("kP", 0.55)
-            val y = SmartDashboard.getNumber("kD", -0.3)
+        if(oi.pipeRight.triggered) {
+            VisionTable.ll_mode!!.setNumber(0)
+            VisionTable.ll_pipeline!!.setNumber(2)
+        }
 
-            val (kP, kD) = arrayOf(
-                Pair(x, y), // front vision camera
-                Pair(x, y), // front downward-facing
-                Pair(x, y) // rear (cargo target)
-            )[camera]
+        if(oi.pipeNone.triggered) {
+            VisionTable.ll_mode!!.setNumber(1)
+        }
 
-            val offset = VisionTable.horizOffset!!.getDouble(0.0)
+
+        if (oi.visionFollowButton.triggered && (VisionTable.ll_tv!!.getNumber(0) == 1)) {
+
+            val kP = SmartDashboard.getNumber("kP", 0.55)
+            val kD = SmartDashboard.getNumber("kD", -0.3)
+
+            // TODO, switch to "tx" if using limelight (divide by 29.8) only use "tx" if "tv" = 1, else there is no targets
+
+            val offset = VisionTable.ll_tx!!.getDouble(0.0) / 29.8
 
             val steer = kP * offset - (kD * (last - offset) / (0.001 * (lastTime - systemTimeMillis)))
 
