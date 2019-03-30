@@ -15,7 +15,7 @@ class OI {
     val pipeLoadingStation = Switch.fromPOV(leftStick.getPOV(), POV.Direction.NORTH)
     val pipeLeft = Switch.fromPOV(leftStick.getPOV(), POV.Direction.WEST)
     val pipeRight = Switch.fromPOV(leftStick.getPOV(), POV.Direction.EAST)
-    val pipeNone = Switch.fromPOV(leftStick.getPOV(), POV.Direction.EAST)
+    val pipeNone = Switch.fromPOV(leftStick.getPOV(), POV.Direction.SOUTH)
 
     val forwardButton = rightStick.getButton(3)
     val forwardLineButton = Switch.ALWAYS_OFF // rightStick.getButton(2)

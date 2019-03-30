@@ -21,6 +21,7 @@ class Robot : BaseRobot() {
     override fun robotSetup() {
         VisionTable.setup()
         
+
         VisionTable.ll_mode!!.setNumber(0)
         VisionTable.ll_pipeline!!.setNumber(1)
         VisionTable.ll_stream!!.setNumber(1)
@@ -29,8 +30,8 @@ class Robot : BaseRobot() {
         SmartDashboard.putNumber("Pressure (psi)", robot.pressureSensor.pressure)
         SmartDashboard.putData("PDP", PDP.pdp)
 
-        SmartDashboard.putNumber("kP", 0.55)
-        SmartDashboard.putNumber("kD", -0.3)
+        SmartDashboard.putNumber("kP", 0.65)
+        SmartDashboard.putNumber("kD", -0.375)
 
         val LIMIT_MAX = 20
         val LIMIT_CONT = LIMIT_MAX
@@ -69,6 +70,9 @@ class Robot : BaseRobot() {
 
     override fun runAuto() {
         println("Auto Enabled")
+        VisionTable.ll_mode!!.setNumber(0)
+        VisionTable.ll_pipeline!!.setNumber(1)
+        VisionTable.ll_stream!!.setNumber(1)
 
         robot.hatchIntake.grab()
         robot.hatchIntake.down()
@@ -186,7 +190,7 @@ class Robot : BaseRobot() {
         }
 
 
-        if (oi.visionFollowButton.triggered && (VisionTable.ll_tv!!.getNumber(0) == 1)) {
+        if (oi.visionFollowButton.triggered && (VisionTable.ll_tv!!.getNumber(0).toDouble() > 0.5)) {
 
             val kP = SmartDashboard.getNumber("kP", 0.55)
             val kD = SmartDashboard.getNumber("kD", -0.3)
@@ -194,6 +198,7 @@ class Robot : BaseRobot() {
             // TODO, switch to "tx" if using limelight (divide by 29.8) only use "tx" if "tv" = 1, else there is no targets
 
             val offset = VisionTable.ll_tx!!.getDouble(0.0) / 29.8
+            println(offset)
 
             val steer = kP * offset - (kD * (last - offset) / (0.001 * (lastTime - systemTimeMillis)))
 
